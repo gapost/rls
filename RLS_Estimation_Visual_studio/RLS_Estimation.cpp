@@ -105,7 +105,8 @@ using namespace arma;
 
 
 	return 0;
-}*/
+}
+*/
 
 int main(){
 	const int len = 10000; //Length of Array of Output/Input
@@ -150,7 +151,7 @@ int main(){
 	}
 
 	// Add Gaussian noise
-	for (intgit  i = 0; i < 200; i++) {
+	for (int  i = 0; i < 200; i++) {
 		Y[i] = Y[i] + dist(generator);
 	}
 	double init_covar = 100000.;
