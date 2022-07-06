@@ -1,22 +1,16 @@
 #include <cmath>
-#include <iostream>
-#include <vector>
 #include <cstdlib>
-#include "C:\armadillo-11.2.1\qbMatrix_Big.h"
-#include <armadillo>
-//#include <boost/numeric/ublas/matrix.hpp>
-//#include <boost/numeric/ublas/operation.hpp>
 #include <random>
+#include "C:\armadillo-11.2.1\examples\Header.h"
 
-using namespace std;
+using namespace RLS;
 using namespace arma;
 
-int main() {
+/*int main() {
 	//INITIALIZATION OF PARAMETERS//
 	
 	const int len = 10000; //Length of Array of Output/Input
 	const int np = 2; //Number of parameters of system to be calculated
-	//int mo = np/2; //Model order of system (2hs taxhs,3hs taxhs etc.)
 	double l = 0.65; //Forgetting factor
 
 	//Generate Random Data for Validation
@@ -69,8 +63,6 @@ int main() {
 	mat Y_matrix(Y, len, 1);
 	mat X_matrix(X, len, 1);
 
-	int na = 2;
-	int d = 0;
 	//END OF INITIALIZATION OF PARAMETERS//
 	//INITIALIZATION OF PHI//
 	mat K1;
@@ -110,6 +102,71 @@ int main() {
 		cout << "Here is output:" << Y[i] << endl;
 		cout << "\n" << endl;
 	}
+
+
+	return 0;
+}*/
+
+int main(){
+	const int len = 10000; //Length of Array of Output/Input
+	const int np = 2; //Number of parameters of system to be calculated
+	double l = 0.65; //Forgetting factor
+	
+	
+
+	//Generate Random Data for Validation
+	double Y[len] = { 0. };
+	double X[len] = { 0. };
+	double theta[np] = { 0. };
+
+	double counter = 0.;
+	const double mean = 0.0;
+	const double stddev = 0.1;
+	std::default_random_engine generator;
+	std::normal_distribution<double> dist(mean, stddev);
+
+
+	for (int i = 0; i < 50; i++) {
+		Y[i] = counter; //OUTPUTS OF SYSTEM
+		X[i] = counter; //INPUTS OF SYSTEM
+		counter += 1.;
+	}
+	for (int i = 50; i < 100; i++) {
+		Y[i] = 50.; //OUTPUTS OF SYSTEM
+		X[i] = counter; //INPUTS OF SYSTEM
+		counter += 1.;
+	}
+
+	for (int i = 100; i < 150; i++) {
+		Y[i] = counter + 50.; //OUTPUTS OF SYSTEM
+		X[i] = counter; //INPUTS OF SYSTEM
+		counter += 1.;
+	}
+
+	for (int i = 150; i < 200; i++) {
+		Y[i] = 20.; //OUTPUTS OF SYSTEM
+		X[i] = counter; //INPUTS OF SYSTEM
+		counter += 1.;
+	}
+
+	// Add Gaussian noise
+	for (intgit  i = 0; i < 200; i++) {
+		Y[i] = Y[i] + dist(generator);
+	}
+	double init_covar = 100000.;
+	RLS_Estimator<double, 2> a(l, init_covar);
+	Mat<double> A(5, 5, fill::zeros);
+	
+	
+	
+	for (int i = 0; i < 200; i++) {
+		a.update_par(X[i], Y[i]);
+		cout << "Here are the estimated parameters: " << endl;
+		a.estimatedParameters().print();
+		cout << '\n';
+	}
+	
+
 
 
 	return 0;
