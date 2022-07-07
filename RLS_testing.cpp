@@ -48,7 +48,7 @@ int main() {
 	}
 
 	for (int i = 200; i < 250; i++) {
-		Y[i] = (i-198)*(i-198) + 2*(i-198) + 1.; //OUTPUTS OF SYSTEM
+		Y[i] = pow(i-198,2) + 2*(i-198) + 1.; //OUTPUTS OF SYSTEM
 		X[i] = counter; //INPUTS OF SYSTEM
 		counter += 1.;
 	}
