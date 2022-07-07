@@ -107,7 +107,7 @@ using namespace arma;
 	return 0;
 }
 */
-
+/*
 int main(){
 	const int len = 10000; //Length of Array of Output/Input
 	const int np = 2; //Number of parameters of system to be calculated
@@ -171,4 +171,4 @@ int main(){
 
 
 	return 0;
-}
+}*/
