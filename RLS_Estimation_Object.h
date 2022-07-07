@@ -44,7 +44,9 @@ namespace RLS {
 			double phi[N] = { 0. };
 
 			phi[0] = 1.;
-			phi[1] = time;
+			for (int i = 1; i < N; i++) {
+				phi[i] = pow(time, i);
+			}
 
 			mat K;
 
