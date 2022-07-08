@@ -1,10 +1,12 @@
 #include <cmath>
 #include <cstdlib>
 #include <random>
+#include <fstream>
 #include "C:\armadillo-11.2.1\examples\Header.h"
 
 using namespace RLS;
 using namespace arma;
+using namespace std;
 
 
 
@@ -71,7 +73,9 @@ int main() {
 		cout << "Here are the estimated parameters at time " << i <<" : " << endl;
 		Alg_1.estimatedParameters().print(); //Print Matrix 
 		cout << '\n';
+		
 	}
+	
 
 	//Test 2 : 2 Parameters and forgetting factor 0.5
 
@@ -79,6 +83,11 @@ int main() {
 
 	cout << "Second Test : We expect parameters to be time-variant and change depending on the output" << endl;
 	cout << "In our case , we should see that it resembles the polynomial we put as input." << endl;
+	//Writing Data from Parameters//
+	ofstream outFile1;
+	ofstream outFile2;
+	outFile1.open("Test2_Param_a0.txt");
+	outFile2.open("Test2_Param_a1.txt");
 
 	for (int i = 0; i < 200; i++) {
 		cout << "Here is output: " << Y[i] << endl;
@@ -86,20 +95,37 @@ int main() {
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
 		Alg_2.estimatedParameters().print(); //Print Matrix 
 		cout << '\n';
+		outFile1 << Alg_2.estimatedParameters().row(0) << " ";
+		outFile2 << Alg_2.estimatedParameters().row(1) << " ";
 	}
-	//Test 3 : 4 Parameters and forgetting factor 0.6
+	outFile1.close();
+	outFile2.close();
+
+	//Test 3 : 3 Parameters and forgetting factor 0.6
 
 	RLS_Estimator<double, 3> Alg_3(0.5, init_covar);
 
 	cout << "Third Test : We are estimating everything as a 2nd order Polynomial"<< endl;
-
+	//Writing Data from Parameters//
+	ofstream outFile3;
+	ofstream outFile4;
+	ofstream outFile5;
+	outFile3.open("Test3_Param_a0.txt");
+	outFile4.open("Test3_Param_a1.txt");
+	outFile5.open("Test3_Param_a2.txt");
 	for (int i = 0; i < 250; i++) {
 		cout << "Here is output: " << Y[i] << endl;
 		Alg_3.update_par(Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
 		Alg_3.estimatedParameters().print(); //Print Matrix 
 		cout << '\n';
+		outFile3 << Alg_3.estimatedParameters().row(0) << " ";
+		outFile4 << Alg_3.estimatedParameters().row(1) << " ";
+		outFile5 << Alg_3.estimatedParameters().row(2) << " ";
 	}
+	outFile3.close();
+	outFile4.close();
+	outFile5.close();
 
 	cout << "Takes much longer to converge with this method to the correct input,if at all" << endl;
 	cout << "Need to look for big shifts in parameters,to validate the change,ie 50 ->6500 at that moment";
