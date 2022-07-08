@@ -67,7 +67,7 @@ int main() {
 
 	for (int i = 0; i < 200; i++) {
 		cout << "Here is output: " << Y[i] << endl;
-		Alg_1.update_par(X[i], Y[i]); // Update parameters in respect to Input and Output
+		Alg_1.update_par(Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i <<" : " << endl;
 		Alg_1.estimatedParameters().print(); //Print Matrix 
 		cout << '\n';
@@ -82,7 +82,7 @@ int main() {
 
 	for (int i = 0; i < 200; i++) {
 		cout << "Here is output: " << Y[i] << endl;
-		Alg_2.update_par(X[i], Y[i]); // Update parameters in respect to Input and Output
+		Alg_2.update_par(Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
 		Alg_2.estimatedParameters().print(); //Print Matrix 
 		cout << '\n';
@@ -95,7 +95,7 @@ int main() {
 
 	for (int i = 0; i < 250; i++) {
 		cout << "Here is output: " << Y[i] << endl;
-		Alg_3.update_par(X[i], Y[i]); // Update parameters in respect to Input and Output
+		Alg_3.update_par(Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
 		Alg_3.estimatedParameters().print(); //Print Matrix 
 		cout << '\n';

@@ -43,7 +43,7 @@ namespace RLS {
 		}
 
 		// Update of Parameters at Time (Last) and with New data (data)
-		void update_par(double time, T data) {
+		void update_par(T data) {
 
 			phi_matrix.col(0) = 1.;
 			for (int i = 1; i < N; i++) {
