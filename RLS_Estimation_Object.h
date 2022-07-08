@@ -22,8 +22,10 @@ namespace RLS {
 		const int np; //Number of Parameters - Order of Polynomial
 		double lambda; //Forgetting Factor
 		double init_covar; //Initial Covariance (Preferably large to declare indiffirence at first iterations//
+		Type_Mat phi_matrix;
 		Type_Mat theta_matrix; //Matrix of Parameters//
 		Type_Mat P_matrix; //Covariance Matrix//
+		Type_Mat K; //Gain Vector//
 		unsigned long long num_update; //Number of updates//
 
 	public: //Set Defaults Values at Construction of Object//
@@ -32,6 +34,8 @@ namespace RLS {
 			init_covar(init),
 			theta_matrix(Type_Mat(N,1,fill::zeros)),
 			P_matrix(Type_Mat(N,N,fill::eye)),
+			phi_matrix(Type_Mat(1, N,fill::zeros)),
+			K(Type_Mat(N,1,fill::zeros)),
 			num_update(0) {
 			setLambda(lam);
 			setCovariance(init);
@@ -41,21 +45,16 @@ namespace RLS {
 		// Update of Parameters at Time (Last) and with New data (data)
 		void update_par(double time, T data) {
 
-			double phi[N] = { 0. };
-
-			phi[0] = 1.;
+			phi_matrix.col(0) = 1.;
 			for (int i = 1; i < N; i++) {
-				phi[i] = pow(time, i);
+				phi_matrix.col(i) = phi_matrix.col(i - 1) * num_update;
 			}
 
-			mat K;
+			//mat phi_matrix(phi, 1, N);
 
-			mat phi_matrix(phi, 1, N);
-			mat phi_matrix_T(phi, N, 1);
-
-			K = phi_matrix * (1. / lambda) * P_matrix * phi_matrix_T + 1.;
-			K = K.i();
-			K = (1. / lambda) * P_matrix * phi_matrix_T * K;
+			K = (1. / lambda) * P_matrix * trans(phi_matrix) * (phi_matrix * (1. / lambda) * P_matrix * trans(phi_matrix) + 1.).i();
+			//K = K.i();
+			//K = (1. / lambda) * P_matrix * phi_matrix_T * K;
 
 
 			//CALCULATION OF  NEW PARAMETERS//
