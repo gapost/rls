@@ -42,7 +42,7 @@ namespace RLS {
 			P_matrix = P_matrix * init;
 		}
 
-		// Update of Parameters at Time (Last) and with New data (data)
+		// Update of Parameters with New data (data)
 		void update_par(T data) {
 
 			phi_matrix.col(0) = 1.;
@@ -50,11 +50,8 @@ namespace RLS {
 				phi_matrix.col(i) = phi_matrix.col(i - 1) * num_update;
 			}
 
-			//mat phi_matrix(phi, 1, N);
-
+			
 			K = (1. / lambda) * P_matrix * trans(phi_matrix) * (phi_matrix * (1. / lambda) * P_matrix * trans(phi_matrix) + 1.).i();
-			//K = K.i();
-			//K = (1. / lambda) * P_matrix * phi_matrix_T * K;
 
 
 			//CALCULATION OF  NEW PARAMETERS//
@@ -66,7 +63,7 @@ namespace RLS {
 
 			num_update += 1;
 		};
-
+		//"Set" Functions//
 		void setLambda(double lam) {
 			if ((lam > 0) && (lam <= 1.0)) {
 				lambda = lam;
@@ -88,13 +85,19 @@ namespace RLS {
 			}
 		};
 
-		const Type_Mat& estimatedParameters() const noexcept { return theta_matrix; }
-		const Type_Mat& CovarianceMat() const noexcept { return P_matrix; }
+		//"Get" Functions//
+		const Type_Mat& getEstimatedParameters() const noexcept { return theta_matrix; }
+		const Type_Mat& getCovarianceMat() const noexcept { return P_matrix; }
+		const Type_Mat& getGains() const noexcept { return K; }
+		const int getIterations() const noexcept { return num_update;  }
+		const double getLambda() const noexcept { return lambda; }
+		const double getCovar() const noexcept { return init_covar; }
 
 		void reset() noexcept {
-			theta_matrix = Type_Mat.zeros(1, np);
-			P_matrix = Type_Mat.eye(np, np) * init_covar;
-			err_ = 0.0;
+			theta_matrix = Type_Mat(1, N, fill::zeros);
+			P_matrix = Type_Mat(N, N,fill::eye) * init_covar;
+			K = Type_Mat(1, N, fill::zeros);
+			phi_matrix = Type_Mat(1, N, fill::zeros);
 			num_update = 0;
 		};
 	};
