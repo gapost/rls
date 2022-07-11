@@ -49,9 +49,9 @@ namespace RLS {
 			for (int i = 1; i < N; i++) {
 				phi_matrix.col(i) = phi_matrix.col(i - 1) * num_update;
 			}
-
+			phi_matrix.print();
 			
-			K = (1. / lambda) * P_matrix * trans(phi_matrix) * (phi_matrix * (1. / lambda) * P_matrix * trans(phi_matrix) + 1.).i();
+			K = P_matrix * trans(phi_matrix) * (phi_matrix * P_matrix * trans(phi_matrix) + lambda).i();
 
 
 			//CALCULATION OF  NEW PARAMETERS//
@@ -59,7 +59,7 @@ namespace RLS {
 			theta_matrix = theta_matrix + K * (data - phi_matrix * theta_matrix); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//CALCULATION OF NEW COVARIANCE MATRIX//
-			P_matrix = ((1. / lambda) * P_matrix - K * phi_matrix * P_matrix);
+			P_matrix = ((1. / lambda) * P_matrix - (1./lambda) * K * phi_matrix * P_matrix);
 
 			num_update += 1;
 		};
