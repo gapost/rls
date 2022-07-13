@@ -1,6 +1,6 @@
 clear all;
 obj = recursiveLS(3);
-obj.ForgettingFactor = 0.89;
+obj.ForgettingFactor = 0.9;
 
 S1 = load('..\rls\MATLAB\MAT_Files\output.mat');
 S2 = load('..\rls\MATLAB\MAT_Files\input.mat');

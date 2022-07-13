@@ -134,9 +134,9 @@ int main() {
 		
 	}
 	
-	//Test 2 : 2 Parameters and forgetting factor 0.89
+	//Test 2 : 2 Parameters and forgetting factor 0.9
 
-	RLS_Estimator<double, 2> Alg_2(0.89, init_covar);
+	RLS_Estimator<double, 2> Alg_2(0.9, init_covar);
 
 	cout << "Second Test : We expect parameters to be time-variant and change depending on the output" << endl;
 	cout << "In our case , we should see that it resembles the polynomial we put as input." << endl;
@@ -159,9 +159,9 @@ int main() {
 	outFile1.close();
 	outFile2.close();
 
-	//Test 3 : 3 Parameters and forgetting factor 0.89
+	//Test 3 : 3 Parameters and forgetting factor 0.9
 
-	RLS_Estimator<double, 3> Alg_3(0.89, init_covar);
+	RLS_Estimator<double, 3> Alg_3(0.9, init_covar);
 
 	cout << "Third Test : We are estimating everything as a 2nd order Polynomial"<< endl;
 
