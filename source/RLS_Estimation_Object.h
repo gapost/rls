@@ -49,7 +49,6 @@ namespace RLS {
 			for (int i = 1; i < N; i++) {
 				phi_matrix.col(i) = phi_matrix.col(i - 1) * num_update;
 			}
-			phi_matrix.print();
 			
 			K = P_matrix * trans(phi_matrix) * (phi_matrix * P_matrix * trans(phi_matrix) + lambda).i();
 

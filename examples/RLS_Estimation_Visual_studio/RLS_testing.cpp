@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <random>
 #include <fstream>
-#include "C:\armadillo-11.2.1\examples\Header.h"
+#include "C:\Users\nicks\rls\source\RLS_Estimation_Object.h"
 
 using namespace RLS;
 using namespace arma;
@@ -21,7 +21,7 @@ int main() {
 
 	double counter = 0.;
 	const double mean = 0.0;
-	const double stddev = 0.1;
+	const double stddev = 10;
 	std::default_random_engine generator;
 	std::normal_distribution<double> dist(mean, stddev);
 
@@ -50,15 +50,22 @@ int main() {
 	}
 
 	for (int i = 200; i < 250; i++) {
-		Y[i] = pow(i,2) + 2.*i + 1.; //OUTPUTS OF SYSTEM
+		Y[i] = (i-198.)*(i-198.) + 2.*(i-198.) + 1.; //OUTPUTS OF SYSTEM
 		X[i] = counter; //INPUTS OF SYSTEM
 		counter += 1.;
 	}
 
-	// Add Gaussian noise
-	/*for (int i = 0; i < 200; i++) {
+	// Add Gaussian noise and Write Output//
+	ofstream outFile0;
+	outFile0.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test_Output.txt");
+	for (int i = 0; i < 250; i++) {
 		Y[i] = Y[i] + dist(generator);
-	}*/
+		outFile0 << Y[i] << " ";
+	}
+	outFile0.close();
+	
+
+	
 
 	//Test the "Set" and "Get" Functions in the class//
 	RLS_Estimator<double, 2> Test_Alg(1., 10000);
@@ -127,9 +134,9 @@ int main() {
 		
 	}
 	
-	//Test 2 : 2 Parameters and forgetting factor 0.5
+	//Test 2 : 2 Parameters and forgetting factor 0.89
 
-	RLS_Estimator<double, 2> Alg_2(0.5, init_covar);
+	RLS_Estimator<double, 2> Alg_2(0.89, init_covar);
 
 	cout << "Second Test : We expect parameters to be time-variant and change depending on the output" << endl;
 	cout << "In our case , we should see that it resembles the polynomial we put as input." << endl;
@@ -137,10 +144,10 @@ int main() {
 	//Writing Data from Parameters//
 	ofstream outFile1;
 	ofstream outFile2;
-	outFile1.open("Test2_Param_a0.txt");
-	outFile2.open("Test2_Param_a1.txt");
+	outFile1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test2_Param_a0.txt");
+	outFile2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test2_Param_a1.txt");
 
-	for (int i = 0; i < 200; i++) {
+	for (int i = 0; i < 250; i++) {
 		cout << "Here is output: " << Y[i] << endl;
 		Alg_2.update_par(Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
@@ -152,9 +159,9 @@ int main() {
 	outFile1.close();
 	outFile2.close();
 
-	//Test 3 : 3 Parameters and forgetting factor 0.5
+	//Test 3 : 3 Parameters and forgetting factor 0.89
 
-	RLS_Estimator<double, 3> Alg_3(0.5, init_covar);
+	RLS_Estimator<double, 3> Alg_3(0.89, init_covar);
 
 	cout << "Third Test : We are estimating everything as a 2nd order Polynomial"<< endl;
 
@@ -162,9 +169,9 @@ int main() {
 	ofstream outFile3;
 	ofstream outFile4;
 	ofstream outFile5;
-	outFile3.open("Test3_Param_a0.txt");
-	outFile4.open("Test3_Param_a1.txt");
-	outFile5.open("Test3_Param_a2.txt");
+	outFile3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Param_a0.txt");
+	outFile4.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Param_a1.txt");
+	outFile5.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Param_a2.txt");
 	for (int i = 0; i < 250; i++) {
 		cout << "Here is output: " << Y[i] << endl;
 		Alg_3.update_par(Y[i]); // Update parameters in respect to Input and Output
