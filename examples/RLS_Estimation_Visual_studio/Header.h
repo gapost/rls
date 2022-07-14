@@ -88,7 +88,8 @@ namespace RLS {
 		const Type_Mat& getEstimatedParameters() const noexcept { return theta_matrix; }
 		const Type_Mat& getCovarianceMat() const noexcept { return P_matrix; }
 		const Type_Mat& getGains() const noexcept { return K; }
-		const int getIterations() const noexcept { return num_update;  }
+		int getIterations() const noexcept { return num_update;  }
+		double getEstimatedOutput() const noexcept { return dot(phi_matrix, theta_matrix); }
 		const double getLambda() const noexcept { return lambda; }
 		const double getCovar() const noexcept { return init_covar; }
 

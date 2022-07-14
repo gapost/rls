@@ -63,7 +63,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="RLS_Estimation.cpp" />
     <ClCompile Include="RLS_testing.cpp" />
   </ItemGroup>
   <ItemGroup>

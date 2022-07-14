@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <random>
 #include <fstream>
-#include "C:\Users\nicks\rls\source\RLS_Estimation_Object.h"
+#include "C:\armadillo-11.2.1\examples\Header.h"
 
 using namespace RLS;
 using namespace arma;
@@ -21,36 +21,36 @@ int main() {
 
 	double counter = 0.;
 	const double mean = 0.0;
-	const double stddev = 10;
+	const double stddev = 1;
 	std::default_random_engine generator;
 	std::normal_distribution<double> dist(mean, stddev);
 
 
-	for (int i = 0; i < 50; i++) {
+	for (int i = 0; i < 100; i++) {
 		Y[i] = counter; //OUTPUTS OF SYSTEM
 		X[i] = counter; //INPUTS OF SYSTEM
 		counter += 1.;
 	}
-	for (int i = 50; i < 100; i++) {
+	for (int i = 100; i < 200; i++) {
 		Y[i] = 50.; //OUTPUTS OF SYSTEM
 		X[i] = counter; //INPUTS OF SYSTEM
 		counter += 1.;
 	}
 
-	for (int i = 100; i < 150; i++) {
-		Y[i] = counter + 50.; //OUTPUTS OF SYSTEM
+	for (int i = 200; i < 300; i++) {
+		Y[i] = counter - 50.; //OUTPUTS OF SYSTEM
 		X[i] = counter; //INPUTS OF SYSTEM
 		counter += 1.;
 	}
 
-	for (int i = 150; i < 200; i++) {
+	for (int i = 300; i < 400; i++) {
 		Y[i] = 20.; //OUTPUTS OF SYSTEM
 		X[i] = counter; //INPUTS OF SYSTEM
 		counter += 1.;
 	}
 
-	for (int i = 200; i < 250; i++) {
-		Y[i] = (i-198.)*(i-198.) + 2.*(i-198.) + 1.; //OUTPUTS OF SYSTEM
+	for (int i = 400; i < 500; i++) {
+		Y[i] = 0.4*(i-398.)*(i-398.) - 2.*(i-398.) + 1.; //OUTPUTS OF SYSTEM
 		X[i] = counter; //INPUTS OF SYSTEM
 		counter += 1.;
 	}
@@ -58,7 +58,7 @@ int main() {
 	// Add Gaussian noise and Write Output//
 	ofstream outFile0;
 	outFile0.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test_Output.txt");
-	for (int i = 0; i < 250; i++) {
+	for (int i = 0; i < 500; i++) {
 		Y[i] = Y[i] + dist(generator);
 		outFile0 << Y[i] << " ";
 	}
@@ -125,7 +125,7 @@ int main() {
 	cout << "First Test : We expect parameters for each area to have errors as every single input is taken in regard" << endl;
 	cout << "and doesn't accurately represent the area." << endl;
 
-	for (int i = 0; i < 200; i++) {
+	for (int i = 0; i < 500; i++) {
 		cout << "Here is output: " << Y[i] << endl;
 		Alg_1.update_par(Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i <<" : " << endl;
@@ -144,10 +144,14 @@ int main() {
 	//Writing Data from Parameters//
 	ofstream outFile1;
 	ofstream outFile2;
+	ofstream outFile_out_2;
 	outFile1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test2_Param_a0.txt");
 	outFile2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test2_Param_a1.txt");
+	outFile_out_2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test2_Est_Output.txt");
 
-	for (int i = 0; i < 250; i++) {
+	for (int i = 0; i < 500; i++) {
+		cout << "Here is estimated output: " << Alg_2.getEstimatedOutput() << endl;
+		outFile_out_2 << Alg_2.getEstimatedOutput() << " ";
 		cout << "Here is output: " << Y[i] << endl;
 		Alg_2.update_par(Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
@@ -158,6 +162,7 @@ int main() {
 	}
 	outFile1.close();
 	outFile2.close();
+	outFile_out_2.close();
 
 	//Test 3 : 3 Parameters and forgetting factor 0.9
 
@@ -169,10 +174,15 @@ int main() {
 	ofstream outFile3;
 	ofstream outFile4;
 	ofstream outFile5;
+	ofstream outFile_out_3;
 	outFile3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Param_a0.txt");
 	outFile4.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Param_a1.txt");
 	outFile5.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Param_a2.txt");
-	for (int i = 0; i < 250; i++) {
+	outFile_out_3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Est_Output.txt");
+
+	for (int i = 0; i < 500; i++) {
+		cout << "Here is estimated output: " << Alg_3.getEstimatedOutput() << endl;
+		outFile_out_3 << Alg_3.getEstimatedOutput() << " ";
 		cout << "Here is output: " << Y[i] << endl;
 		Alg_3.update_par(Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
@@ -185,6 +195,7 @@ int main() {
 	outFile3.close();
 	outFile4.close();
 	outFile5.close();
+	outFile_out_3.close();
 
 	cout << "Takes much longer to converge with this method to the correct input,if at all. " << endl;
 	cout << "Need to look for big shifts in parameters,to validate the change,ie 50 ->6500 at that moment";
