@@ -4,12 +4,12 @@ obj.ForgettingFactor = 0.9;
 
 S1 = load('..\rls\MATLAB\MAT_Files\output.mat');
 S2 = load('..\rls\MATLAB\MAT_Files\input.mat');
-S3 = load('..\rls\MATLAB\MAT_Files\error1.mat');
-S4 = load('..\rls\MATLAB\MAT_Files\error2.mat');
-S5 = load('..\rls\MATLAB\MAT_Files\error3.mat');
+S3 = load('..\rls\MATLAB\MAT_Files\true_a0.mat');
+S4 = load('..\rls\MATLAB\MAT_Files\true_a1.mat');
+S5 = load('..\rls\MATLAB\MAT_Files\true_a2.mat');
 
 output = S1.output();
-noise = wgn(1,250,1);
+noise = wgn(1,500,1);
 output = noise + output;
 
 input  = S2.input();
@@ -66,6 +66,6 @@ xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a0')
 legend('Estimated Parameter','Measured Parameter');
-grid on  
+grid on    
 
 print('..\rls\MATLAB\images\Test3Check','-dpng');
