@@ -38,9 +38,9 @@ legend('Measured Output','Estimated Output');
 grid on 
 
 subplot(2,2,2);
-plot(numSample,true_a0,'b-');
+plot(numSample,true_a0,'r-');
 hold on 
-plot(numSample,theta_full(:,3),'r-')
+plot(numSample,theta_full(:,3),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a0')
@@ -48,9 +48,9 @@ legend('Estimated Parameter','Measured Parameter');
 grid on  
 
 subplot(2,2,3);
-plot(numSample,true_a1,'b-');
+plot(numSample,true_a1,'r-');
 hold on 
-plot(numSample,theta_full(:,2),'r-')
+plot(numSample,theta_full(:,2),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a1')
@@ -58,9 +58,9 @@ legend('Estimated Parameter','Measured Parameter');
 grid on 
 
 subplot(2,2,4);
-plot(numSample,true_a2,'b-');
+plot(numSample,true_a2,'r-');
 hold on 
-plot(numSample,theta_full(:,1),'r-')
+plot(numSample,theta_full(:,1),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a2');
