@@ -54,5 +54,4 @@ xlabel('Time');
 ylabel('Value of Parameter');
 title('Test3 - Parameter a2')
 grid on
-
 print('..\rls\MATLAB\images\RLS','-dpng');
