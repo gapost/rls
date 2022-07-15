@@ -21,7 +21,7 @@ int main() {
 
 	double counter = 0.;
 	const double mean = 0.0;
-	const double stddev = 1;
+	const double stddev = 4;
 	std::default_random_engine generator;
 	std::normal_distribution<double> dist(mean, stddev);
 
@@ -57,7 +57,7 @@ int main() {
 
 	// Add Gaussian noise and Write Output//
 	ofstream outFile0;
-	outFile0.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test_Output.txt");
+	outFile0.open("C:/Users/Nikos/rls/MATLAB/TXT-Files/Test_Output.txt");
 	for (int i = 0; i < 500; i++) {
 		Y[i] = Y[i] + dist(generator);
 		outFile0 << Y[i] << " ";
@@ -145,9 +145,9 @@ int main() {
 	ofstream outFile1;
 	ofstream outFile2;
 	ofstream outFile_out_2;
-	outFile1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test2_Param_a0.txt");
-	outFile2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test2_Param_a1.txt");
-	outFile_out_2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test2_Est_Output.txt");
+	outFile1.open("C:/Users/Nikos/rls/MATLAB/TXT-Files/Test2_Param_a0.txt");
+	outFile2.open("C:/Users/Nikos/rls/MATLAB/TXT-Files/Test2_Param_a1.txt");
+	outFile_out_2.open("C:/Users/Nikos/rls/MATLAB/TXT-Files/Test2_Est_Output.txt");
 
 	for (int i = 0; i < 500; i++) {
 		cout << "Here is estimated output: " << Alg_2.getEstimatedOutput() << endl;
@@ -175,10 +175,10 @@ int main() {
 	ofstream outFile4;
 	ofstream outFile5;
 	ofstream outFile_out_3;
-	outFile3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Param_a0.txt");
-	outFile4.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Param_a1.txt");
-	outFile5.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Param_a2.txt");
-	outFile_out_3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/Test3_Est_Output.txt");
+	outFile3.open("C:/Users/Nikos/rls/MATLAB/TXT-Files/Test3_Param_a0.txt");
+	outFile4.open("C:/Users/Nikos/rls/MATLAB/TXT-Files/Test3_Param_a1.txt");
+	outFile5.open("C:/Users/Nikos/rls/MATLAB/TXT-Files/Test3_Param_a2.txt");
+	outFile_out_3.open("C:/Users/Nikos/rls/MATLAB/TXT-Files/Test3_Est_Output.txt");
 
 	for (int i = 0; i < 500; i++) {
 		cout << "Here is estimated output: " << Alg_3.getEstimatedOutput() << endl;
