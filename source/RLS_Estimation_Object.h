@@ -110,6 +110,7 @@ namespace RLS {
 			P_matrix = Type_Mat(N, N,fill::eye) * init_covar;
 			K = Type_Mat(1, N, fill::zeros);
 			phi_matrix = Type_Mat(1, N, fill::zeros);
+			temp = Type_Mat(N,1,fill::zeros)
 			num_update = 0;
 		};
 	};
