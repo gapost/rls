@@ -26,6 +26,7 @@ namespace RLS {
 		Type_Mat theta_matrix; //Matrix of Parameters//
 		Type_Mat P_matrix; //Covariance Matrix//
 		Type_Mat K; //Gain Vector//
+		Type_Mat temp;
 		unsigned long long num_update; //Number of updates//
 
 	public: //Set Defaults Values at Construction of Object//
@@ -36,6 +37,7 @@ namespace RLS {
 			P_matrix(Type_Mat(N,N,fill::eye)),
 			phi_matrix(Type_Mat(1, N,fill::zeros)),
 			K(Type_Mat(N,1,fill::zeros)),
+			temp(Type_Mat(N,1,fill::zeros)),
 			num_update(0) {
 			setLambda(lam);
 			setCovariance(init);
@@ -49,18 +51,28 @@ namespace RLS {
 			for (int i = 1; i < N; i++) {
 				phi_matrix.col(i) = phi_matrix.col(i - 1) * num_update;
 			}
-			
-			K = P_matrix * trans(phi_matrix) * (phi_matrix * P_matrix * trans(phi_matrix) + lambda).i();
+			temp = P_matrix * trans(phi_matrix);
+			K = temp / (dot(phi_matrix,temp) + lambda);
 
 
 			//CALCULATION OF  NEW PARAMETERS//
 
-			theta_matrix = theta_matrix + K * (data - phi_matrix * theta_matrix); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+			theta_matrix += K * (data - phi_matrix * theta_matrix); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//CALCULATION OF NEW COVARIANCE MATRIX//
-			P_matrix = ((1. / lambda) * P_matrix - (1./lambda) * K * phi_matrix * P_matrix);
-
-			num_update += 1;
+	
+			for (int i = 0; i < N; i++) {
+				P_matrix(i, i) -= K(i) * temp(i);
+				P_matrix(i, i) /= lambda;
+				for (int j = 0; j < i ; j++) {
+					P_matrix(i, j) -= K(i) * temp(j);
+					P_matrix(i, j) /= lambda;
+					//Matrix is symmetric - assign values for less computations
+					P_matrix(j, i) = P_matrix(i, j);
+				
+				}
+			};
+			num_update += 1; //Update number of iterations
 		};
 		//"Set" Functions//
 		void setLambda(double lam) {
@@ -98,6 +110,7 @@ namespace RLS {
 			P_matrix = Type_Mat(N, N,fill::eye) * init_covar;
 			K = Type_Mat(1, N, fill::zeros);
 			phi_matrix = Type_Mat(1, N, fill::zeros);
+			temp = Type_Mat(N,1,fill::zeros);
 			num_update = 0;
 		};
 	};
