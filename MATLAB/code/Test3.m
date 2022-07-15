@@ -44,7 +44,7 @@ plot(numSample,theta_full(:,3),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a0')
-legend('Estimated Parameter','Measured Parameter');
+legend('Measured Parameter','Estimated Parameter');
 grid on  
 
 subplot(2,2,3);
@@ -54,7 +54,7 @@ plot(numSample,theta_full(:,2),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a1')
-legend('Estimated Parameter','Measured Parameter');
+legend('Measured Parameter','Estimated Parameter');
 grid on 
 
 subplot(2,2,4);
@@ -64,7 +64,7 @@ plot(numSample,theta_full(:,1),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a2');
-legend('Estimated Parameter','Measured Parameter');
-grid on    
-
+legend('Measured Parameter','Estimated Parameter');
+grid on 
+    
 print('..\rls\MATLAB\images\Test3Check','-dpng');

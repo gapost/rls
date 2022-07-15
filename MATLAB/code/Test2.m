@@ -40,19 +40,8 @@ plot(numSample,estimatedOut,'r-');
 title('Output and Measured Output');
 xlabel('Time');
 ylabel('Value');
-legend('Estimated Output','Measured Output');
+legend('Measured Output','Estimated Output');
 grid on 
-
-subplot(2,2,2);
-plot(numSample,true_a1,'r-');
-hold on 
-plot(numSample,theta_full(:,1),'b-')
-xlabel('Time');
-ylabel('Value of Parameter');
-title('Parameter a1')
-legend('Estimated Parameter','Measured Parameter');
-grid on 
-
 
 subplot(2,2,2);
 plot(numSample,true_a0,'r-');
@@ -61,7 +50,7 @@ plot(numSample,theta_full(:,2),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a0')
-legend('Estimated Parameter','Measured Parameter');
+legend('Measured Parameter','Estimated Parameter');
 grid on 
 
 subplot(2,2,3);
@@ -71,8 +60,8 @@ plot(numSample,theta_full(:,1),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a1')
-legend('Estimated Parameter','Measured Parameter');
-grid on 
+legend('Measured Parameter','Estimated Parameter');
+grid on  
  
 
 print('..\rls\MATLAB\images\Test2Check','-dpng');
