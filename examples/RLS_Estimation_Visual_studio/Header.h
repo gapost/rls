@@ -60,19 +60,19 @@ namespace RLS {
 			theta_matrix += K * (data - phi_matrix * theta_matrix); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//CALCULATION OF NEW COVARIANCE MATRIX//
-			//temp = trans(temp);
 	
 			for (int i = 0; i < N; i++) {
-				for (int j = 0; j < i+1; j++) {
+				P_matrix(i, i) -= K(i) * temp(i);
+				P_matrix(i, i) /= lambda;
+				for (int j = 0; j < i ; j++) {
 					P_matrix(i, j) -= K(i) * temp(j);
-					if (j != i) {
-						P_matrix(j, i) = P_matrix(i, j);
-					}
+					P_matrix(i, j) /= lambda;
+					//Matrix is symmetric - assign values for less computations
+					P_matrix(j, i) = P_matrix(i, j);
+				
 				}
-			}
-			P_matrix /= lambda;
-	
-			num_update += 1;
+			};
+			num_update += 1; //Update number of iterations
 		};
 		//"Set" Functions//
 		void setLambda(double lam) {
@@ -110,7 +110,7 @@ namespace RLS {
 			P_matrix = Type_Mat(N, N,fill::eye) * init_covar;
 			K = Type_Mat(1, N, fill::zeros);
 			phi_matrix = Type_Mat(1, N, fill::zeros);
-			temp = Type_Mat(N,1,fill::zeros)
+			temp = Type_Mat(N,1,fill::zeros);
 			num_update = 0;
 		};
 	};
