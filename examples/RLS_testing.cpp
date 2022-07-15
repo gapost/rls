@@ -12,7 +12,7 @@ using namespace std;
 
 int main() {
 	//Initializing parameters//
-	const int len = 10000; //Length of Array of Output/Input
+	const int len = 500; //Length of Array of Output/Input
 	double init_covar = 100000.;
 	//Generate Data for Validation
 	double Y[len] = { 0. };

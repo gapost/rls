@@ -60,7 +60,7 @@ namespace RLS {
 			theta_matrix += K * (data - phi_matrix * theta_matrix); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//CALCULATION OF NEW COVARIANCE MATRIX//
-			temp = trans(temp);
+			//temp = trans(temp);
 	
 			for (int i = 0; i < N; i++) {
 				for (int j = 0; j < i+1; j++) {
