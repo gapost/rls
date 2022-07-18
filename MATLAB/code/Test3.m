@@ -68,7 +68,7 @@ plot(numSample,theta_full(:,1),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a2');
-legend('Measured Parameter','Estimated Parameter');
+legend('Real Parameter','Estimated Parameter');
 grid on 
 
     
