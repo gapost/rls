@@ -17,8 +17,7 @@ namespace RLS {
 	public:
 		typedef Mat<T> Type_Mat;
 
-
-	private:
+	protected:
 		const int np; //Number of Parameters - Order of Polynomial
 		double lambda; //Forgetting Factor
 		double init_covar; //Initial Covariance (Preferably large to declare indiffirence at first iterations//
@@ -45,31 +44,31 @@ namespace RLS {
 		}
 
 		// Update of Parameters with New data (data)
-		void update_par(T data) {
+		void update_par(vec& x, T data) {
 
-			phi_matrix.col(0) = 1.;
-			for (int i = 1; i < N; i++) {
-				phi_matrix.col(i) = phi_matrix.col(i - 1) * num_update;
+			for (int i = 0; i < N; i++) {
+				phi_matrix.col(i) = x(i);
 			}
-			temp = P_matrix * trans(phi_matrix);
-			K = temp / (dot(phi_matrix,temp) + lambda);
 
+			temp = P_matrix * trans(phi_matrix);
+
+			K = temp / (dot(phi_matrix, temp) + lambda);
 
 			//CALCULATION OF  NEW PARAMETERS//
 
 			theta_matrix += K * (data - phi_matrix * theta_matrix); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//CALCULATION OF NEW COVARIANCE MATRIX//
-	
+
 			for (int i = 0; i < N; i++) {
 				P_matrix(i, i) -= K(i) * temp(i);
 				P_matrix(i, i) /= lambda;
-				for (int j = 0; j < i ; j++) {
+				for (int j = 0; j < i; j++) {
 					P_matrix(i, j) -= K(i) * temp(j);
 					P_matrix(i, j) /= lambda;
 					//Matrix is symmetric - assign values for less computations
 					P_matrix(j, i) = P_matrix(i, j);
-				
+
 				}
 			};
 			num_update += 1; //Update number of iterations
@@ -114,9 +113,47 @@ namespace RLS {
 			num_update = 0;
 		};
 	};
+	template <typename T, const int N>
+	class RLS_Estimator_Poly : public RLS_Estimator<T, N> {
+	public:
+		typedef Mat<T> Type_Mat;
 
+	public:
+		RLS_Estimator_Poly(double lam, double init)
+			: RLS_Estimator<T, N>(lam, init) {}
+		void update_par(T data) {
+
+			phi_matrix.col(0) = 1.;
+			for (int i = 1; i < N; i++) {
+				phi_matrix.col(i) = phi_matrix.col(i - 1) * num_update;
+			}
+			temp = P_matrix * trans(phi_matrix);
+			K = temp / (dot(phi_matrix, temp) + lambda);
+
+
+			//CALCULATION OF  NEW PARAMETERS//
+
+			theta_matrix += K * (data - phi_matrix * theta_matrix); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+
+			//CALCULATION OF NEW COVARIANCE MATRIX//
+
+			for (int i = 0; i < N; i++) {
+				P_matrix(i, i) -= K(i) * temp(i);
+				P_matrix(i, i) /= lambda;
+				for (int j = 0; j < i; j++) {
+					P_matrix(i, j) -= K(i) * temp(j);
+					P_matrix(i, j) /= lambda;
+					//Matrix is symmetric - assign values for less computations
+					P_matrix(j, i) = P_matrix(i, j);
+
+				}
+			};
+			num_update += 1; //Update number of iterations
+		};
+		
+
+	};
 };
-
 #endif
 
 
