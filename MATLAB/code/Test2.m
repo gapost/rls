@@ -32,11 +32,15 @@ for i = 1:numel(input)
 end
 
 figure(1);
+
+frame_h = get(handle(gcf),'JavaFrame');
+set(frame_h,'Maximized',1);
+
 subplot(2,2,1);
 numSample = 1:400;
-plot(numSample,output,'b');
+plot(numSample,output,'r-');
 hold on 
-plot(numSample,estimatedOut,'r-');
+plot(numSample,estimatedOut,'b-');
 title('Output and Measured Output');
 xlabel('Time');
 ylabel('Value');
@@ -50,7 +54,7 @@ plot(numSample,theta_full(:,2),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a0')
-legend('Measured Parameter','Estimated Parameter');
+legend('Real Parameter','Estimated Parameter');
 grid on 
 
 subplot(2,2,3);
@@ -60,8 +64,8 @@ plot(numSample,theta_full(:,1),'b-')
 xlabel('Time');
 ylabel('Value of Parameter');
 title('Parameter a1')
-legend('Measured Parameter','Estimated Parameter');
+legend('Real Parameter','Estimated Parameter');
 grid on  
  
 
-print('..\rls\MATLAB\images\Test2Check','-dpng');
+print('..\rls\MATLAB\images\Test2Check','-dpng','-r0');
