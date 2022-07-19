@@ -8,12 +8,12 @@ Recursive least squares (RLS) is an adaptive filter algorithm that recursively f
 
 The algorithm works as follows:
 $`N= number of parameters`$, 
-$`λ= forgetting factor`$, 
-$`Φ= \begin{bmatrix}a1(n)\\a2(n)\\...\end{bmatrix}`$
-, $`Φ(n)`$ is the matrix of regressors used to calculate the parameters.
 
-$`P= \begin{bmatrix} P(0) & 0 & ..\\0 & P(0) & ....\\...\end{bmatrix}`$
-,$`P`$ is the covariance matrix and $`P(0)`$ is an initial large value to declare indifference.
+$`λ= forgetting factor`$, 
+
+$`Φ= \begin{bmatrix}r_1(n)\\r_2(n)\\...\end{bmatrix}`$ , is the matrix of regressors used to calculate the parameters.
+
+$`P= \begin{bmatrix} P(0) & 0 & ..\\0 & P(0) & ....\\...\end{bmatrix}`$ , is the covariance matrix and $`P(0)`$ is an initial large value to declare indifference.
 
 $`e(n)`$ is the error from new data with the previous parameters.
 
@@ -33,7 +33,10 @@ $`P(n) = (1/λ)(P(n-1) -g(n)Φ^T(n)P(n-1))`$, calculate new covariance matrix.
 
 $`w(n) = w(n-1) + e(n)g(n)`$, calculate new parameters, estimate and repeat.
 
-
+The algorithm typically uses values for the forgetting factor between 0.98 and 1. Its 
+purpose is to accurately estimate the next value of the output depending on the input
+of the regressors by calculating the correct parameters. Changing the forgetting factor
+changes how much the algorithm takes into account past values of the output.
 
 
 
