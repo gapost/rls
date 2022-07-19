@@ -6,8 +6,11 @@ Recursive least squares in C++
 
 Recursive least squares (RLS) is an adaptive filter algorithm that recursively finds the coefficients that minimize a weighted linear least squares cost function relating to the input signals. This approach is in contrast to other algorithms such as the least mean squares (LMS) that aim to reduce the mean square error. In the derivation of the RLS, the input signals are considered deterministic, while for the LMS and similar algorithm they are considered stochastic. Compared to most of its competitors, the RLS exhibits extremely fast convergence. However, this benefit comes at the cost of high computational complexity.
 
+The algorithm works as follow:
+$ Φ=\begin{pmatrix}1 & 2 & 3\\a & b & c\end{pmatrix}
 
 
+![title]()
 ## Getting started
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
