@@ -29,7 +29,7 @@ $`e(n) = d(n) -Φ^T(n)w(n-1)`$ , calculating new error.
 
 $`g(n) = P(n-1)Φ(n) / ( λ + Φ^T(n)P(n-1)Φ(n) )`$, calculating new gain vector.
 
-$`P(n) = (λ^-1)(P(n-1) -g(n)Φ^T(n)P(n-1))`$, calculate new covariance matrix.
+$`P(n) = (1/λ)(P(n-1) -g(n)Φ^T(n)P(n-1))`$, calculate new covariance matrix.
 
 $`w(n) = w(n-1) + e(n)g(n)`$, calculate new parameters, estimate and repeat.
 
