@@ -6,28 +6,6 @@ Recursive least squares in C++
 
 Recursive least squares (RLS) is an adaptive filter algorithm that recursively finds the coefficients that minimize a weighted linear least squares cost function relating to the input signals. This approach is in contrast to other algorithms such as the least mean squares (LMS) that aim to reduce the mean square error. In the derivation of the RLS, the input signals are considered deterministic, while for the LMS and similar algorithm they are considered stochastic. Compared to most of its competitors, the RLS exhibits extremely fast convergence. However, this benefit comes at the cost of high computational complexity.
 
-The RLS algorithm for a p-th order RLS filter can be summarized as
-
-Parameters:	{\displaystyle p=}p= filter order
-{\displaystyle \lambda =}\lambda = forgetting factor
-{\displaystyle \delta =}\delta = value to initialize {\displaystyle \mathbf {P} (0)}{\mathbf  {P}}(0)
-Initialization:	{\displaystyle \mathbf {w} (0)=0}{\displaystyle \mathbf {w} (0)=0},
-{\displaystyle x(k)=0,k=-p,\dots ,-1}x(k)=0,k=-p,\dots ,-1,
-{\displaystyle d(k)=0,k=-p,\dots ,-1}d(k)=0,k=-p,\dots ,-1
-{\displaystyle \mathbf {P} (0)=\delta I}{\displaystyle \mathbf {P} (0)=\delta I} where {\displaystyle I}I is the identity matrix of rank {\displaystyle p+1}p+1
-Computation:	For {\displaystyle n=1,2,\dots }n=1,2,\dots 
-{\displaystyle \mathbf {x} (n)=\left[{\begin{matrix}x(n)\\x(n-1)\\\vdots \\x(n-p)\end{matrix}}\right]}{\mathbf  {x}}(n)=\left[{\begin{matrix}x(n)\\x(n-1)\\\vdots \\x(n-p)\end{matrix}}\right]
-
-{\displaystyle \alpha (n)=d(n)-\mathbf {x} ^{T}(n)\mathbf {w} (n-1)}\alpha (n)=d(n)-{\mathbf  {x}}^{T}(n){\mathbf  {w}}(n-1)
-{\displaystyle \mathbf {g} (n)=\mathbf {P} (n-1)\mathbf {x} (n)\left\{\lambda +\mathbf {x} ^{T}(n)\mathbf {P} (n-1)\mathbf {x} (n)\right\}^{-1}}{\displaystyle \mathbf {g} (n)=\mathbf {P} (n-1)\mathbf {x} (n)\left\{\lambda +\mathbf {x} ^{T}(n)\mathbf {P} (n-1)\mathbf {x} (n)\right\}^{-1}}
-{\displaystyle \mathbf {P} (n)=\lambda ^{-1}\mathbf {P} (n-1)-\mathbf {g} (n)\mathbf {x} ^{T}(n)\lambda ^{-1}\mathbf {P} (n-1)}{\mathbf  {P}}(n)=\lambda ^{{-1}}{\mathbf  {P}}(n-1)-{\mathbf  {g}}(n){\mathbf  {x}}^{{T}}(n)\lambda ^{{-1}}{\mathbf  {P}}(n-1)
-{\displaystyle \mathbf {w} (n)=\mathbf {w} (n-1)+\,\alpha (n)\mathbf {g} (n)}{\mathbf  {w}}(n)={\mathbf  {w}}(n-1)+\,\alpha (n){\mathbf  {g}}(n).
-
-
-
-
-
-
 
 
 ## Getting started
