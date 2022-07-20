@@ -22,6 +22,8 @@ namespace RLS {
 		const int np; //Number of Parameters - Order of Polynomial
 		double lambda; //Forgetting Factor
 		double init_covar; //Initial Covariance (Preferably large to declare indiffirence at first iterations//
+		double cost;
+		double error;
 		Type_Vec phi;
 		Type_Vec theta; //Matrix of Parameters//
 		Type_Mat P_matrix; //Covariance Matrix//
@@ -38,7 +40,9 @@ namespace RLS {
 			phi(Type_Vec(N,fill::zeros)),
 			K(Type_Vec(N,fill::zeros)),
 			temp(Type_Vec(N,fill::zeros)),
-			num_update(0) {
+			num_update(0),
+			cost(0),
+			error(0){
 			setLambda(lam);
 			setCovariance(init);
 			P_matrix = P_matrix * init;
@@ -56,8 +60,10 @@ namespace RLS {
 			K = temp / (dot(phi, temp) + lambda);
 
 			//CALCULATION OF  NEW PARAMETERS//
-
-			theta += K * (data - dot(phi,theta)); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+			error = data - dot(phi, theta);
+			cost = lambda * cost + error * error;
+			
+			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//CALCULATION OF NEW COVARIANCE MATRIX//
 
@@ -72,6 +78,7 @@ namespace RLS {
 
 				}
 			};
+			
 			num_update += 1; //Update number of iterations
 		};
 		//"Set" Functions//
@@ -102,6 +109,8 @@ namespace RLS {
 		const Type_Vec& getGains() const noexcept { return K; }
 		int getIterations() const noexcept { return num_update;  }
 		double getEstimatedOutput() const noexcept { return dot(phi, theta); }
+		double getCost() const noexcept { return cost; }
+		double getError() const noexcept { return error; }
 		const double getLambda() const noexcept { return lambda; }
 		const double getCovar() const noexcept { return init_covar; }
 
@@ -123,7 +132,7 @@ namespace RLS {
 		RLS_Estimator_Poly(double lam, double init)
 			: RLS_Estimator<T, N>(lam, init) {}
 		void update_par(T data) {
-
+			
 			phi(0) = 1.;
 			for (int i = 1; i < N; i++) {
 				phi(i) = phi(i - 1) * num_update;
@@ -133,10 +142,11 @@ namespace RLS {
 	
 			K = temp / (dot(phi, temp) + lambda);
 
-	
+			error = data - dot(phi, theta);
+
 			//CALCULATION OF  NEW PARAMETERS//
 
-			theta += K * (data - dot(theta,phi)); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//CALCULATION OF NEW COVARIANCE MATRIX//
 
@@ -151,6 +161,8 @@ namespace RLS {
 
 				}
 			};
+			cost *= lambda;
+			cost += error * error;
 			num_update += 1; //Update number of iterations
 		};
 		

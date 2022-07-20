@@ -188,6 +188,7 @@ int main() {
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
 		Alg_3.getEstimatedParameters().print(); //Print Matrix 
 		cout << '\n';
+		cout << "Here is cost : " << Alg_3.getCost() << endl;
 		outFile3 << Alg_3.getEstimatedParameters().row(0) << " ";
 		outFile4 << Alg_3.getEstimatedParameters().row(1) << " ";
 		outFile5 << Alg_3.getEstimatedParameters().row(2) << " ";
