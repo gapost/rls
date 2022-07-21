@@ -68,7 +68,7 @@ int main() {
 	
 
 	//Test the "Set" and "Get" Functions in the class//
-	RLS_Estimator_Poly<double, 2> Test_Alg(1., 10000);
+	PolyRLS<double, 2> Test_Alg(1., 10000);
 	//Do some updates to notice changes//
 	for (int i = 0; i < 10; i++) {
 		Test_Alg.update_par(Y[i]); // Update parameters 
@@ -120,7 +120,7 @@ int main() {
 	//Initialize some different parameters to check differences//
 	//Test 1 : 2 Parameters and forgetting factor 1
 
-	RLS_Estimator_Poly<double, 2> Alg_1(1., init_covar);
+	PolyRLS<double, 2> Alg_1(1., init_covar);
 
 	cout << "First Test : We expect parameters for each area to have errors as every single input is taken in regard" << endl;
 	cout << "and doesn't accurately represent the area." << endl;
@@ -136,7 +136,7 @@ int main() {
 	
 	//Test 2 : 2 Parameters and forgetting factor 0.9
 
-	RLS_Estimator_Poly<double, 2> Alg_2(0.9, init_covar);
+	PolyRLS<double, 2> Alg_2(0.9, init_covar);
 
 	cout << "Second Test : We expect parameters to be time-variant and change depending on the output" << endl;
 	cout << "In our case , we should see that it resembles the polynomial we put as input." << endl;
@@ -166,7 +166,7 @@ int main() {
 
 	//Test 3 : 3 Parameters and forgetting factor 0.9
 
-	RLS_Estimator_Poly<double, 3> Alg_3(0.9, init_covar);
+	PolyRLS<double, 3> Alg_3(0.9, init_covar);
 
 	cout << "Third Test : We are estimating everything as a 2nd order Polynomial"<< endl;
 
@@ -252,5 +252,58 @@ int main() {
 	cout << '\n';
 	cout << "Initial Covariance function : " << Test_Gen.getCovar() << endl;
 	cout << '\n';
+
+	//Test 5: Testing Rectangular Window Approach
+	//Test the "Set" and "Get" Functions in the class//
+	BlockRLS<double, 5> Test_Block(6, 100000.);
+	//Do some updates to notice changes//
+	for (int i = 0; i < 20; i++) {
+		Test_Block.update_par(A, Y[i]); // Update parameters 
+	}
+	cout << "Testing Functions : " << endl;
+	cout << "Parameter function : " << endl;
+	Test_Block.getEstimatedParameters().print();
+	cout << '\n';
+	cout << "Covariance function : " << endl;
+	Test_Block.getCovarianceMat().print();
+	cout << '\n';
+	cout << "Gain function : " << endl;
+	Test_Block.getGains().print();
+	cout << '\n';
+	cout << "Iteration function : " << Test_Block.getIterations() << endl;
+	cout << '\n';
+	cout << "Forgetting factor function : " << Test_Block.getLambda() << endl;
+	cout << '\n';
+	cout << "Initial Covariance function : " << Test_Block.getCovar() << endl;
+	cout << '\n';
+
+	//Change some parameters with "Set" and test them again//
+	Test_Block.setLambda(0.5);
+	Test_Block.setCovariance(5000);
+	cout << "New forgetting factor : " << Test_Block.getLambda() << endl;
+	cout << '\n';
+	cout << "New initial covariancce : " << Test_Block.getCovar() << endl;
+	cout << '\n';
+
+	//Test "reset" function//
+	cout << "Testing reset function : " << endl;
+	Test_Block.reset();
+	cout << "Parameter function : " << endl;
+	Test_Block.getEstimatedParameters().print();
+	cout << '\n';
+	cout << "Covariance function : " << endl;
+	Test_Block.getCovarianceMat().print();
+	cout << '\n';
+	cout << "Gain function : " << endl;
+	Test_Block.getGains().print();
+	cout << '\n';
+	cout << "Iteration function : " << Test_Block.getIterations() << endl;
+	cout << '\n';
+	cout << "Forgetting factor function : " << Test_Block.getLambda() << endl;
+	cout << '\n';
+	cout << "Initial Covariance function : " << Test_Block.getCovar() << endl;
+	cout << '\n';
+
+	//Write Checks to test the data , need to make vector of regressors//
 	return 0;
 }

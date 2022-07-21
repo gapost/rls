@@ -124,27 +124,25 @@ namespace RLS {
 		};
 	};
 	template <typename T, const int N>
-	class RLS_Estimator_Poly : public RLS_Estimator<T, N> {
+	class PolyRLS : public RLS_Estimator<T, N> {
 	public:
-		typedef Mat<T> Type_Mat;
-
-	public:
-		RLS_Estimator_Poly(double lam, double init)
+		PolyRLS(double lam, double init)
 			: RLS_Estimator<T, N>(lam, init) {}
 		void update_par(T data) {
-			
+
 			phi(0) = 1.;
 			for (int i = 1; i < N; i++) {
 				phi(i) = phi(i - 1) * num_update;
 			}
-	
+
+
 			temp = P_matrix * phi;
-	
+
 			K = temp / (dot(phi, temp) + lambda);
 
-			error = data - dot(phi, theta);
-
 			//CALCULATION OF  NEW PARAMETERS//
+			error = data - dot(phi, theta);
+			cost = lambda * cost + error * error;
 
 			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
@@ -161,11 +159,82 @@ namespace RLS {
 
 				}
 			};
-			cost *= lambda;
-			cost += error * error;
+
 			num_update += 1; //Update number of iterations
+
+		}
+	};
+	template <typename T, const int N>
+	class BlockRLS: public RLS_Estimator<T, N> {
+	private: 
+		int check;
+	public:
+		BlockRLS(int win, double init)
+			: RLS_Estimator<T, N>(1., init),
+			  check(win) {}
+		void update_par(vec& x, T data){
+
+			for (int i = 0; i < N; i++) {
+				phi(i) = x(i);
+			}
+
+			temp = P_matrix * phi;
+
+			K = temp / (dot(phi, temp) + lambda);
+
+			error = data - dot(phi, theta);
+
+			//CALCULATION OF  NEW PARAMETERS//
+			error = data - dot(phi, theta);
+			cost = lambda * cost + error * error;
+
+			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+
+			//CALCULATION OF NEW COVARIANCE MATRIX//
+
+			for (int i = 0; i < N; i++) {
+				P_matrix(i, i) -= K(i) * temp(i);
+				P_matrix(i, i) /= lambda;
+				for (int j = 0; j < i; j++) {
+					P_matrix(i, j) -= K(i) * temp(j);
+					P_matrix(i, j) /= lambda;
+					//Matrix is symmetric - assign values for less computations
+					P_matrix(j, i) = P_matrix(i, j);
+
+				}
+			}
+
+			num_update += 1; //Update number of iterations
+			if (check + 0) {
+				check -= 1;
+			}
+			if (check == 0) {
+
+				temp = P_matrix * phi;
+
+				K = temp / (lambda - dot(phi, temp));
+
+				error = data - dot(phi, theta);
+
+				//CALCULATION OF  NEW PARAMETERS//
+				error = data - dot(phi, theta);
+				cost = lambda * cost + error * error;
+
+				theta -= K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+				for (int i = 0; i < N; i++) {
+					P_matrix(i, i) += K(i) * temp(i);
+					P_matrix(i, i) /= lambda;
+					for (int j = 0; j < i; j++) {
+						P_matrix(i, j) -= K(i) * temp(j);
+						P_matrix(i, j) /= lambda;
+						//Matrix is symmetric - assign values for less computations
+						P_matrix(j, i) = P_matrix(i, j);
+
+					}
+				}
+			}
 		};
-		
+
 
 	};
 };
