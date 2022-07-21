@@ -168,10 +168,12 @@ namespace RLS {
 	class BlockRLS: public RLS_Estimator<T, N> {
 	private: 
 		int check;
+		bool remove;
 	public:
 		BlockRLS(int win, double init)
 			: RLS_Estimator<T, N>(1., init),
-			  check(win) {}
+			  check(win),
+			  remove(false){}
 		void update_par(vec& x, T data){
 
 			for (int i = 0; i < N; i++) {
@@ -205,10 +207,11 @@ namespace RLS {
 			}
 
 			num_update += 1; //Update number of iterations
-			if (check + 0) {
-				check -= 1;
-			}
+			check -= 1;
 			if (check == 0) {
+				remove = true;
+			}
+			if (remove) {
 
 				temp = P_matrix * phi;
 
