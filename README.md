@@ -38,5 +38,11 @@ purpose is to accurately estimate the next value of the output depending on the 
 of the regressors by calculating the correct parameters. Changing the forgetting factor
 changes how much the algorithm takes into account past values of the output.
 
+The code supports 3 type of estimators:
+1) A general exponential estimator where the input are the regressors and the data
+2) An exponential polynomial estimator where the regressors are calculated from the iterations 
+of the class
+3) A rectangular window estimator where only the N points are taken into account
+
 
 
