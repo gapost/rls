@@ -5,16 +5,17 @@
 #include <armadillo>
 #include <iostream>
 #include <vector>
+#include <stdexcept>
 
 using namespace arma;
 
 
 namespace RLS {
 
-
 	template <typename T, const int N>
 	class RLS_Estimator {
 	public:
+		static_assert(std::is_arithmetic_v<T>,"The estimator doesn't support string inputs.");
 		typedef Mat<T> Type_Mat;
 		typedef Col<T> Type_Vec;
 
@@ -22,8 +23,8 @@ namespace RLS {
 		const int np; //Number of Parameters - Order of Polynomial
 		double lambda; //Forgetting Factor
 		double init_covar; //Initial Covariance (Preferably large to declare indiffirence at first iterations//
-		double cost;
-		double error;
+		double cost; //Cost function 
+		double error; //Error value
 		Type_Vec phi;
 		Type_Vec theta; //Matrix of Parameters//
 		Type_Mat P_matrix; //Covariance Matrix//
@@ -49,23 +50,28 @@ namespace RLS {
 		}
 
 		// Update of Parameters with New data (data)
-		void update_par(vec& x, T data) {
-
+		void update_par(vec &x, T data) {
+			//Pass regressors given in phi matrix
+			if (x.n_rows != phi.n_rows) {
+				throw std::invalid_argument("Matrix of Regressors needs to be change same length as the parameters");
+			}
 			for (int i = 0; i < N; i++) {
 				phi(i) = x(i);
 			}
 
 			temp = P_matrix * phi;
 
+			//Set gain vector
 			K = temp / (dot(phi, temp) + lambda);
 
-			//CALCULATION OF  NEW PARAMETERS//
+			//Calculate error and cost function values
 			error = data - dot(phi, theta);
 			cost = lambda * cost + error * error;
-			
+
+			//Calculation of new parameters//
 			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
-			//CALCULATION OF NEW COVARIANCE MATRIX//
+			//Calculation of new covariance//
 
 			for (int i = 0; i < N; i++) {
 				P_matrix(i, i) -= K(i) * temp(i);
@@ -113,16 +119,21 @@ namespace RLS {
 		double getError() const noexcept { return error; }
 		const double getLambda() const noexcept { return lambda; }
 		const double getCovar() const noexcept { return init_covar; }
-
+		
+		//Reset Function
 		void reset() noexcept {
 			theta = Type_Vec(N, fill::zeros);
 			P_matrix = Type_Mat(N, N,fill::eye) * init_covar;
 			K = Type_Vec(N, fill::zeros);
 			phi = Type_Vec(N, fill::zeros);
 			temp = Type_Vec(N,fill::zeros);
+			cost = 0;
+			error = 0;
 			num_update = 0;
 		};
 	};
+
+	//Subclass of RLS_Estimator that implemenets a polynomial estimation of N parameters in regards with time//
 	template <typename T, const int N>
 	class PolyRLS : public RLS_Estimator<T, N> {
 	public:
@@ -130,23 +141,25 @@ namespace RLS {
 			: RLS_Estimator<T, N>(lam, init) {}
 		void update_par(T data) {
 
+			//Set regressors with regards to updates//
 			phi(0) = 1.;
 			for (int i = 1; i < N; i++) {
 				phi(i) = phi(i - 1) * num_update;
 			}
 
-
 			temp = P_matrix * phi;
 
+			//Set gain vector
 			K = temp / (dot(phi, temp) + lambda);
 
-			//CALCULATION OF  NEW PARAMETERS//
+			//Calculate error and cost function values
 			error = data - dot(phi, theta);
 			cost = lambda * cost + error * error;
 
+			//Calculation of new parameters//
 			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
-			//CALCULATION OF NEW COVARIANCE MATRIX//
+			//Calculation of new covariance//
 
 			for (int i = 0; i < N; i++) {
 				P_matrix(i, i) -= K(i) * temp(i);

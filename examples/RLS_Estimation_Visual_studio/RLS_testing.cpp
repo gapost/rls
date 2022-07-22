@@ -64,7 +64,6 @@ int main() {
 	}
 	outFile0.close();
 	
-
 	
 
 	//Test the "Set" and "Get" Functions in the class//
@@ -201,14 +200,23 @@ int main() {
 	cout << "Takes much longer to converge with this method to the correct input,if at all. " << endl;
 	cout << "Need to look for big shifts in parameters,to validate the change,ie 50 ->6500 at that moment";
 	cout << " or 0.0002 -> -5.8";
+	cout << '\n';
+
+
 
 	//Test 4 : Testing Generalized RLS_Estimation function
-	vec A(5, fill::value(5));
-	RLS_Estimator<double, 5> Test_Gen(0.9,100000.);
+	cout << "Now we are going to test the generalized RLS function with the regressors of the" << endl;
+	cout << "polynomial to check the results" << endl;
+	cout << '\n';
+	vec Reg(3, fill::eye);
+	RLS_Estimator<double, 3> Test_Gen(0.9,100000.);
 	//Do some updates to notice changes//
 	for (int i = 0; i < 10; i++) {
-		Test_Gen.update_par(A,Y[i]); // Update parameters 
+		Reg(1) = i;
+		Reg(2) = i * i;
+		Test_Gen.update_par(Reg,Y[i]); // Update parameters 
 	}
+
 	cout << "Testing Functions : " << endl;
 	cout << "Parameter function : " << endl;
 	Test_Gen.getEstimatedParameters().print();
@@ -226,6 +234,7 @@ int main() {
 	cout << "Initial Covariance function : " << Test_Gen.getCovar() << endl;
 	cout << '\n';
 
+
 	//Change some parameters with "Set" and test them again//
 	Test_Gen.setLambda(0.5);
 	Test_Gen.setCovariance(5000);
@@ -233,6 +242,7 @@ int main() {
 	cout << '\n';
 	cout << "New initial covariancce : " << Test_Gen.getCovar() << endl;
 	cout << '\n';
+
 
 	//Test "reset" function//
 	cout << "Testing reset function : " << endl;
@@ -253,12 +263,52 @@ int main() {
 	cout << "Initial Covariance function : " << Test_Gen.getCovar() << endl;
 	cout << '\n';
 
-	//Test 5: Testing Rectangular Window Approach
-	//Test the "Set" and "Get" Functions in the class//
-	BlockRLS<double, 5> Test_Block(6, 100000.);
+	//Reset back to start
+	Test_Gen.reset();
+	Test_Gen.setLambda(0.9);
+	Test_Gen.setCovariance(10000);
+
+	//Test 5: Check output of parameters from the generalized class
+	ofstream outFileGen1;
+	ofstream outFileGen2;
+	ofstream outFileGen3;
+	ofstream outFile_out_Gen;
+	outFileGen1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/TestGen_Param_a0.txt");
+	outFileGen2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/TestGen_Param_a1.txt");
+	outFileGen3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/TestGen_Param_a2.txt");
+	outFile_out_Gen.open("C:/Users/nicks/rls/MATLAB/TXT-Files/TestGen_Est_Output.txt");
+
+	for (int i = 0; i < 500; i++) {
+		cout << "Here is estimated output: " << Test_Gen.getEstimatedOutput() << endl;
+		outFile_out_3 << Test_Gen.getEstimatedOutput() << " ";
+		cout << "Here is output: " << Y[i] << endl;
+		Test_Gen.update_par(Reg,Y[i]); // Update parameters in respect to Input and Output
+		cout << "Here are the estimated parameters at time " << i << " : " << endl;
+		Test_Gen.getEstimatedParameters().print(); //Print Matrix 
+		cout << '\n';
+		cout << "Here is cost : " << Test_Gen.getCost() << endl;
+		outFile3 << Test_Gen.getEstimatedParameters().row(0) << " ";
+		outFile4 << Test_Gen.getEstimatedParameters().row(1) << " ";
+		outFile5 << Test_Gen.getEstimatedParameters().row(2) << " ";
+	}
+
+	outFileGen1.close();
+	outFileGen2.close();
+	outFileGen3.close();
+	outFile_out_Gen.close();
+
+
+
+	//Test 6: Testing Rectangular Window Approach
+	BlockRLS<double, 3> Test_Block(6, 100000.);
+	cout << "Now we are going to test the Block RLS function with the regressors of the" << endl;
+	cout << "polynomial to check the results" << endl;
+	cout << '\n';
 	//Do some updates to notice changes//
 	for (int i = 0; i < 20; i++) {
-		Test_Block.update_par(A, Y[i]); // Update parameters 
+		Reg(1) = i;
+		Reg(2) = i * i;
+		Test_Block.update_par(Reg, Y[i]); // Update parameters 
 	}
 	cout << "Testing Functions : " << endl;
 	cout << "Parameter function : " << endl;
@@ -304,6 +354,5 @@ int main() {
 	cout << "Initial Covariance function : " << Test_Block.getCovar() << endl;
 	cout << '\n';
 
-	//Write Checks to test the data , need to make vector of regressors//
 	return 0;
 }
