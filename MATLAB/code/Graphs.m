@@ -1,13 +1,13 @@
 clear all;
 %Take Data from C++ for graphing in MATLAB%
-output =   dlmread("..\rls\MATLAB\TXT-Files\Test_Output.txt");
-Test2_a0 = dlmread("..\rls\MATLAB\TXT-Files\Test2_Param_a0.txt");
-Test2_a1 = dlmread("..\rls\MATLAB\TXT-Files\Test2_Param_a1.txt");
-Test3_a0 = dlmread("..\rls\MATLAB\TXT-Files\Test3_Param_a0.txt");
-Test3_a1 = dlmread("..\rls\MATLAB\TXT-Files\Test3_Param_a1.txt");
-Test3_a2 = dlmread("..\rls\MATLAB\TXT-Files\Test3_Param_a2.txt");
-Test2_est = dlmread("..\rls\MATLAB\TXT-Files\Test2_Est_Output.txt");
-Test3_est = dlmread("..\rls\MATLAB\TXT-Files\Test3_Est_Output.txt");
+output =   dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test_Output.txt");
+Test2_a0 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test2_Param_a0.txt");
+Test2_a1 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test2_Param_a1.txt");
+Test3_a0 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test3_Param_a0.txt");
+Test3_a1 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test3_Param_a1.txt");
+Test3_a2 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test3_Param_a2.txt");
+Test2_est = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test2_Est_Output.txt");
+Test3_est = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test3_Est_Output.txt");
 S1 = load('..\rls\MATLAB\MAT_Files\true_a0.mat');
 S2 = load('..\rls\MATLAB\MAT_Files\true_a1.mat');
 S3 = load('..\rls\MATLAB\MAT_Files\true_a2.mat');
