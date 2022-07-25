@@ -59,7 +59,7 @@ int main() {
 	ofstream outFile0;
 	outFile0.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Output.txt");
 	for (int i = 0; i < 500; i++) {
-		Y[i] = Y[i] + dist(generator);
+		//Y[i] = Y[i] + dist(generator);
 		outFile0 << Y[i] << " ";
 	}
 	outFile0.close();
@@ -302,7 +302,7 @@ int main() {
 
 
 	//Test 6: Testing Rectangular Window Approach
-	BlockRLS<double, 3> Test_Block(6, 100000.);
+	BlockRLS<double, 3> Test_Block(70, 100000.);
 	cout << "|---------Now we are going to test the Block RLS function with the regressors of the---------|" << endl;
 	cout << "|---------polynomial to check the results---------|" << endl;
 	cout << '\n';
@@ -329,38 +329,10 @@ int main() {
 	cout << "Initial Covariance function : " << Test_Block.getCovar() << endl;
 	cout << '\n';
 
-	//Change some parameters with "Set" and test them again//
-	Test_Block.setLambda(0.5);
-	Test_Block.setCovariance(5000);
-	cout << "New forgetting factor : " << Test_Block.getLambda() << endl;
-	cout << '\n';
-	cout << "New initial covariancce : " << Test_Block.getCovar() << endl;
-	cout << '\n';
-
-	//Test "reset" function//
-	cout << "Testing reset function : " << endl;
-	Test_Block.reset();
-	cout << "Parameter function : " << endl;
-	Test_Block.getEstimatedParameters().print();
-	cout << '\n';
-	cout << "Covariance function : " << endl;
-	Test_Block.getCovarianceMat().print();
-	cout << '\n';
-	cout << "Gain function : " << endl;
-	Test_Block.getGains().print();
-	cout << '\n';
-	cout << "Iteration function : " << Test_Block.getIterations() << endl;
-	cout << '\n';
-	cout << "Forgetting factor function : " << Test_Block.getLambda() << endl;
-	cout << '\n';
-	cout << "Initial Covariance function : " << Test_Block.getCovar() << endl;
-	cout << '\n';
 
 
 	//Reset back to start
 	Test_Block.reset();
-	Test_Block.setLambda(0.9);
-	Test_Block.setCovariance(10000);
 
 	//Test 6: Check output of parameters from the BlockRLS class
 	ofstream outFileBlock1;

@@ -181,19 +181,36 @@ namespace RLS {
 	class BlockRLS: public RLS_Estimator<T, N> {
 	private: 
 		int check;
+		int window;
 		bool remove;
+		Type_Mat pin;
+		Type_Vec pout;
+		
 	public:
 		BlockRLS(int win, double init)
 			: RLS_Estimator<T, N>(1., init),
-			  check(win),
+			  window(win),
+			  check(0),
+			  pout(Type_Vec(win+1, fill::zeros)),
+			  pin(Type_Mat(N, win+1,fill::zeros)),
 			  remove(false){}
 		void update_par(vec& x, T data){
 
 			for (int i = 0; i < N; i++) {
 				phi(i) = x(i);
 			}
+			pin = shift(pin, -1, 1);
+			pout = shift(pout, -1);
 
+			pin.col(window) = phi;
+		
+			pout(window) = data;
+
+			check += 1; //Raise check for when array is full
 			temp = P_matrix * phi;
+			if (check > window) {
+				remove = true;
+			}
 
 			K = temp / (dot(phi, temp) + lambda);
 
@@ -206,7 +223,7 @@ namespace RLS {
 			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//CALCULATION OF NEW COVARIANCE MATRIX//
-
+			
 			for (int i = 0; i < N; i++) {
 				P_matrix(i, i) -= K(i) * temp(i);
 				P_matrix(i, i) /= lambda;
@@ -220,35 +237,49 @@ namespace RLS {
 			}
 
 			num_update += 1; //Update number of iterations
-			check -= 1;
-			if (check == 0) {
-				remove = true;
-			}
 			if (remove) {
+				temp = P_matrix * pin.col(0);
 
-				temp = P_matrix * phi;
+				K = temp / (lambda - dot(pin.col(0), temp));
 
-				K = temp / (lambda - dot(phi, temp));
-
-				error = data - dot(phi, theta);
+				error = pout(0) - dot(pin.col(0), theta);
 
 				//CALCULATION OF  NEW PARAMETERS//
-				error = data - dot(phi, theta);
-				cost = lambda * cost + error * error;
+				
+				//cost = lambda * cost + error * error;
 
 				theta -= K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 				for (int i = 0; i < N; i++) {
 					P_matrix(i, i) += K(i) * temp(i);
-					P_matrix(i, i) /= lambda;
 					for (int j = 0; j < i; j++) {
-						P_matrix(i, j) -= K(i) * temp(j);
-						P_matrix(i, j) /= lambda;
+						P_matrix(i, j) += K(i) * temp(j);
 						//Matrix is symmetric - assign values for less computations
 						P_matrix(j, i) = P_matrix(i, j);
 
 					}
 				}
+				
 			}
+			
+		};
+		//Get Function
+		const Type_Vec& getpout() const noexcept { return pout; }
+		const Type_Mat& getpin() const noexcept { return pin; }
+		//Reset Function
+		void reset() noexcept {
+			theta = Type_Vec(N, fill::zeros);
+			P_matrix = Type_Mat(N, N, fill::eye) * init_covar;
+			pin = Type_Mat(N, window+1, fill::zeros);
+			pout = Type_Vec(window+1, fill::zeros);
+			K = Type_Vec(N, fill::zeros);
+			phi = Type_Vec(N, fill::zeros);
+			temp = Type_Vec(N, fill::zeros);
+			lambda = 1.;
+			cost = 0;
+			check = 0;
+			remove = false;
+			error = 0;
+			num_update = 0;
 		};
 
 
