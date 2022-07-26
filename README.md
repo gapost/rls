@@ -47,7 +47,7 @@ observations from the estimated parameters.
 
 ## Recursion:
 
-$`e_(i+N,i) = d_(i+N) - (Φ_(i+N))^Tw_(i+N-1,i)`$ , calculating new error.
+$`e_i+N,i = d_(i+N) - (Φ_(i+N))^Tw_(i+N-1,i)`$ , calculating new error.
 
 $`g_(i+N,i) = P_(i+N-1,i)Φ_(i+N) / ( 1 + (Φ_(i+N))^TP_(i+N-1,i)Φ_(i+N) )`$, calculating new gain vector.
 
