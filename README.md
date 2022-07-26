@@ -47,25 +47,25 @@ observations from the estimated parameters.
 
 ## Recursion:
 
-$`e_(i+N,i) = d_(i+N) - (Φ_(i+N))^T*w_(i+N-1,i)`$ , calculating new error.
+$`e_(i+N,i) = d_(i+N) - (Φ_(i+N))^Tw_(i+N-1,i)`$ , calculating new error.
 
-$`g_(i+N,i) = P_(i+N-1,i)Φ_(i+N) / ( 1 + (Φ_(i+N))^T*P_(i+N-1,i)Φ_(i+N) )`$, calculating new gain vector.
+$`g_(i+N,i) = P_(i+N-1,i)Φ_(i+N) / ( 1 + (Φ_(i+N))^TP_(i+N-1,i)Φ_(i+N) )`$, calculating new gain vector.
 
-$`P_(i+N,i) = (P_(i+N-1,i) - g_(i+N,i)*(Φ_(i+N))^T*P_(i+N-1,i))`$, calculate new covariance matrix.
+$`P_(i+N,i) = (P_(i+N-1,i) - g_(i+N,i)(Φ_(i+N))^TP_(i+N-1,i))`$, calculate new covariance matrix.
 
-$`w_(i+N,i) = w_(i+N-1,i) + e_(i+N,i)*g_(i+N,i)`$, calculate new parameters, estimate and repeat.
+$`w_(i+N,i) = w_(i+N-1,i) + e_(i+N,i)g_(i+N,i)`$, calculate new parameters, estimate and repeat.
 
 
 In addition to the above recursion, the following recursive operation takes place when the algorithm
 has been give over N points, where N the length of the rectangular window.
 
-$`e_(i+N,i) = d_i - (Φ_i)^T*w_(i+N,i)`$ , calculating new error.
+$`e_(i+N,i) = d_i - (Φ_i)^Tw_(i+N,i)`$ , calculating new error.
 
-$`g_(i+N,i+1) = P_(i+N,i)Φ_i / ( 1 - (Φ_i)^T*P_(i+N,i)Φ_i )`$, calculating new gain vector.
+$`g_(i+N,i+1) = P_(i+N,i)Φ_i / ( 1 - (Φ_i)^TP_(i+N,i)Φ_i )`$, calculating new gain vector.
 
-$`P_(i+N,i+1) = (P_(i+N,i) - g(n)(Φ_i)^T*P_(i+N,i))`$, calculate new covariance matrix.
+$`P_(i+N,i+1) = (P_(i+N,i) - g(n)(Φ_i)^TP_(i+N,i))`$, calculate new covariance matrix.
 
-$`w_(i+N,i+1) = w_(i+N,i) - e_(i+N,i)*g_(i+N,i+1) `$, calculate new parameters, estimate and repeat.
+$`w_(i+N,i+1) = w_(i+N,i) - e_(i+N,i)g_(i+N,i+1) `$, calculate new parameters, estimate and repeat.
 
 
 1) A general exponential estimator where the input are the regressors and the data
