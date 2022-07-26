@@ -8,9 +8,9 @@ Recursive least squares (RLS) is an adaptive filter algorithm that recursively f
 
 ## Exponential:
 The exponential algorithm works as follows:
-$`N= \number of parameters`$, 
+$`N= number \of \parameters`$, 
 
-$`λ= \forgetting factor`$, 
+$`λ= forgetting \factor`$, 
 
 $`Φ= \begin{bmatrix}r_1(n)\\r_2(n)\\...\end{bmatrix}`$ , is the matrix of regressors used to calculate the parameters.
 
