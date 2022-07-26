@@ -6,13 +6,13 @@ output and with the purpose of estimating a 1st order and a 2nd order polynomial
 using a forgetting factor equal to 0.9.
 
 The output is as follows:
-For 0 <= x < 100: $`f(x) = x`$
+For $`0 <= x < 100: f(x) = x`$
 
-For 100 <= x < 200: $`f(x) = 50`$
+For $`100 <= x < 200: f(x) = 50`$
 
-For 200 <= x < 300: $`f(x) = x - 50 `$
+For $`200 <= x < 300: f(x) = x - 50 `$
 
-For 300 <= x < 400: $`f(x) = 20`$
+For $`300 <= x < 400: f(x) = 20`$
 
 For the 1st order polynomial estimation, the MATLAB algorithm presented the following results:
 
@@ -28,7 +28,7 @@ from the desired output, however the two proccesses present very similar results
 For the 2nd order polynomial estimation, 50 more samples of a 2nd order function
 were added to the output signal:
 
-For 400 <= x < 500:
+For $`400 <= x < 500:`$
 $`f(x) = 0.4 * (x - 398)^2 - 2 * (x - 398) + 1`$
 
 For the estimation, the MATLAB algorithm presented the following results:
