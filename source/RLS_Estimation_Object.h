@@ -114,7 +114,7 @@ namespace RLS {
 		const Type_Mat& getCovarianceMat() const noexcept { return P_matrix; }
 		const Type_Vec& getGains() const noexcept { return K; }
 		int getIterations() const noexcept { return num_update;  }
-		double getEstimatedOutput() const noexcept { return dot(phi, theta); }
+		double getEstimatedOutput(vec& x) const noexcept { return dot(x, theta); }
 		double getCost() const noexcept { return cost; }
 		double getError() const noexcept { return error; }
 		const double getLambda() const noexcept { return lambda; }
@@ -173,9 +173,12 @@ namespace RLS {
 				}
 			};
 
+
+
 			num_update += 1; //Update number of iterations
 
 		}
+		double getEstimatedOutput() const noexcept { return dot(phi, theta); }
 	};
 	template <typename T, const int N>
 	class BlockRLS: public RLS_Estimator<T, N> {
@@ -187,8 +190,8 @@ namespace RLS {
 		Type_Vec pout;
 		
 	public:
-		BlockRLS(int win, double init)
-			: RLS_Estimator<T, N>(1., init),
+		BlockRLS(double lam,int win, double init)
+			: RLS_Estimator<T, N>(lam, init),
 			  window(win),
 			  check(0),
 			  pout(Type_Vec(win+1, fill::zeros)),
@@ -199,26 +202,24 @@ namespace RLS {
 			for (int i = 0; i < N; i++) {
 				phi(i) = x(i);
 			}
+
 			pin = shift(pin, -1, 1);
 			pout = shift(pout, -1);
 
 			pin.col(window) = phi;
-		
+			
 			pout(window) = data;
 
 			check += 1; //Raise check for when array is full
 			temp = P_matrix * phi;
-			if (check > window) {
+			if (check > window ) {
 				remove = true;
 			}
 
 			K = temp / (dot(phi, temp) + lambda);
 
-			error = data - dot(phi, theta);
-
 			//CALCULATION OF  NEW PARAMETERS//
 			error = data - dot(phi, theta);
-			cost = lambda * cost + error * error;
 
 			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
@@ -235,31 +236,32 @@ namespace RLS {
 
 				}
 			}
-
 			num_update += 1; //Update number of iterations
-			if (remove) {
-				temp = P_matrix * pin.col(0);
 
-				K = temp / (lambda - dot(pin.col(0), temp));
+			temp = P_matrix * pin.col(0);
 
-				error = pout(0) - dot(pin.col(0), theta);
+			K = temp / (lambda - dot(pin.col(0), temp));
+	
+			error = pout(0) - dot(pin.col(0), theta);
+			//CALCULATION OF  NEW PARAMETERS//
 
-				//CALCULATION OF  NEW PARAMETERS//
-				
-				//cost = lambda * cost + error * error;
+			//cost = lambda * cost + error * error;
 
-				theta -= K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-				for (int i = 0; i < N; i++) {
-					P_matrix(i, i) += K(i) * temp(i);
-					for (int j = 0; j < i; j++) {
-						P_matrix(i, j) += K(i) * temp(j);
-						//Matrix is symmetric - assign values for less computations
-						P_matrix(j, i) = P_matrix(i, j);
+			theta -= K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+			for (int i = 0; i < N; i++) {
+				P_matrix(i, i) += K(i) * temp(i);
+				P_matrix(i, i) /= lambda;
+				for (int j = 0; j < i; j++) {
+					P_matrix(i, j) += K(i) * temp(j);
+					P_matrix(i, j) /= lambda;
+					//Matrix is symmetric - assign values for less computations
+					P_matrix(j, i) = P_matrix(i, j);
 
-					}
 				}
-				
 			}
+				
+			
+			
 			
 		};
 		//Get Function

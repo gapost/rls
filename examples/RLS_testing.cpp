@@ -1,8 +1,8 @@
-#include <cmath>
-#include <cstdlib>
+
+/*#include <cstdlib>
 #include <random>
 #include <fstream>
-#include "C:\armadillo-11.2.1\examples\Header.h"
+#include "C:\armadillo-11.2.1\examples\RLS_Estimation_Object.h"
 
 using namespace RLS;
 using namespace arma;
@@ -27,7 +27,7 @@ int main() {
 
 
 	for (int i = 0; i < 100; i++) {
-		Y[i] = counter; //OUTPUTS OF SYSTEM
+		Y[i] = counter + 10; //OUTPUTS OF SYSTEM
 		X[i] = counter; //INPUTS OF SYSTEM
 		counter += 1.;
 	}
@@ -265,7 +265,7 @@ int main() {
 
 	//Reset back to start
 	Test_Gen.reset();
-	Test_Gen.setLambda(0.9);
+	Test_Gen.setLambda(1.);
 	Test_Gen.setCovariance(10000);
 
 	//Test 5: Check output of parameters from the generalized class
@@ -281,8 +281,8 @@ int main() {
 	for (int i = 0; i < 500; i++) {
 		Reg(1) = i;
 		Reg(2) = i * i;
-		cout << "Here is estimated output: " << Test_Gen.getEstimatedOutput() << endl;
-		outFile_out_Gen << Test_Gen.getEstimatedOutput() << " ";
+		cout << "Here is estimated output: " << Test_Gen.getEstimatedOutput(Reg) << endl;
+		outFile_out_Gen << Test_Gen.getEstimatedOutput(Reg) << " ";
 		cout << "Here is output: " << Y[i] << endl;
 		Test_Gen.update_par(Reg,Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
@@ -302,38 +302,10 @@ int main() {
 
 
 	//Test 6: Testing Rectangular Window Approach
-	BlockRLS<double, 3> Test_Block(70, 100000.);
+	BlockRLS<double, 3> Test_Block(0.9,10, 100000.);
 	cout << "|---------Now we are going to test the Block RLS function with the regressors of the---------|" << endl;
 	cout << "|---------polynomial to check the results---------|" << endl;
 	cout << '\n';
-	//Do some updates to notice changes//
-	for (int i = 0; i < 20; i++) {
-		Reg(1) = i;
-		Reg(2) = i * i;
-		Test_Block.update_par(Reg, Y[i]); // Update parameters 
-	}
-	cout << "Testing Functions : " << endl;
-	cout << "Parameter function : " << endl;
-	Test_Block.getEstimatedParameters().print();
-	cout << '\n';
-	cout << "Covariance function : " << endl;
-	Test_Block.getCovarianceMat().print();
-	cout << '\n';
-	cout << "Gain function : " << endl;
-	Test_Block.getGains().print();
-	cout << '\n';
-	cout << "Iteration function : " << Test_Block.getIterations() << endl;
-	cout << '\n';
-	cout << "Forgetting factor function : " << Test_Block.getLambda() << endl;
-	cout << '\n';
-	cout << "Initial Covariance function : " << Test_Block.getCovar() << endl;
-	cout << '\n';
-
-
-
-	//Reset back to start
-	Test_Block.reset();
-
 	//Test 6: Check output of parameters from the BlockRLS class
 	ofstream outFileBlock1;
 	ofstream outFileBlock2;
@@ -343,18 +315,16 @@ int main() {
 	outFileBlock2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Param_a1.txt");
 	outFileBlock3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Param_a2.txt");
 	outFile_out_Block.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Est_Output.txt");
-
 	for (int i = 0; i < 500; i++) {
 		Reg(1) = i;
 		Reg(2) = i * i;
-		cout << "Here is estimated output: " << Test_Block.getEstimatedOutput() << endl;
-		outFile_out_Block << Test_Block.getEstimatedOutput() << " ";
+		cout << "Here is estimated output: " << Test_Block.getEstimatedOutput(Reg) << endl;
+		outFile_out_Block << Test_Block.getEstimatedOutput(Reg) << " ";
 		cout << "Here is output: " << Y[i] << endl;
 		Test_Block.update_par(Reg, Y[i]); // Update parameters in respect to Input and Output
 		cout << "Here are the estimated parameters at time " << i << " : " << endl;
 		Test_Block.getEstimatedParameters().print(); //Print Matrix 
 		cout << '\n';
-		cout << "Here is cost : " << Test_Block.getCost() << endl;
 		outFileBlock1 << Test_Block.getEstimatedParameters().row(0) << " ";
 		outFileBlock2 << Test_Block.getEstimatedParameters().row(1) << " ";
 		outFileBlock3 << Test_Block.getEstimatedParameters().row(2) << " ";
@@ -366,4 +336,4 @@ int main() {
 	outFile_out_Block.close();
 
 	return 0;
-}
+}*/

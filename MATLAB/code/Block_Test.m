@@ -1,5 +1,5 @@
 clear all;
-obj = recursiveLS(3, 'History','Finite','WindowLength',70);
+obj = recursiveLS(3, 'History','Finite','WindowLength',10);
 obj.ForgettingFactor = 1;
 
 S1 = load('..\rls\MATLAB\MAT_Files\output.mat');
