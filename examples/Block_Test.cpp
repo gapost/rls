@@ -42,8 +42,5 @@ int main(){
 		cout << "Estimated parameters at time " << i << " : " << " |";
 		trans(Test_Block.getEstimatedParameters()).print(); //Print Matrix 
 		cout << '\n';
-		if (i % 20 == 0) {
-			Test_Block.reset();
-		}
 	}
 }
