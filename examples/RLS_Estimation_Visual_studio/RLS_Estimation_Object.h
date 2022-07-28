@@ -237,30 +237,30 @@ namespace RLS {
 				}
 			}
 			num_update += 1; //Update number of iterations
+			if (remove) {
+				temp = P_matrix * pin.col(0);
 
-			temp = P_matrix * pin.col(0);
+				K = temp / (lambda - dot(pin.col(0), temp));
 
-			K = temp / (lambda - dot(pin.col(0), temp));
-	
-			error = pout(0) - dot(pin.col(0), theta);
-			//CALCULATION OF  NEW PARAMETERS//
+				error = pout(0) - dot(pin.col(0), theta);
+				//CALCULATION OF  NEW PARAMETERS//
 
-			//cost = lambda * cost + error * error;
+				//cost = lambda * cost + error * error;
 
-			theta -= K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-			for (int i = 0; i < N; i++) {
-				P_matrix(i, i) += K(i) * temp(i);
-				P_matrix(i, i) /= lambda;
-				for (int j = 0; j < i; j++) {
-					P_matrix(i, j) += K(i) * temp(j);
-					P_matrix(i, j) /= lambda;
-					//Matrix is symmetric - assign values for less computations
-					P_matrix(j, i) = P_matrix(i, j);
+				theta -= K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+				for (int i = 0; i < N; i++) {
+					P_matrix(i, i) += K(i) * temp(i);
+					P_matrix(i, i) /= lambda;
+					for (int j = 0; j < i; j++) {
+						P_matrix(i, j) += K(i) * temp(j);
+						P_matrix(i, j) /= lambda;
+						//Matrix is symmetric - assign values for less computations
+						P_matrix(j, i) = P_matrix(i, j);
 
+					}
 				}
+
 			}
-				
-			
 			
 			
 		};

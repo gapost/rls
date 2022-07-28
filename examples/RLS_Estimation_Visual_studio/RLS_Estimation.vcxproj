@@ -64,7 +64,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="RLS_testing.cpp" />
-    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="Block_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Users\Nikos\Documents\qbMatrix_Big.h" />
