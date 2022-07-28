@@ -1,5 +1,4 @@
-
-/*#include <cstdlib>
+#include <cstdlib>
 #include <random>
 #include <fstream>
 #include "C:\armadillo-11.2.1\examples\RLS_Estimation_Object.h"
@@ -7,8 +6,6 @@
 using namespace RLS;
 using namespace arma;
 using namespace std;
-
-
 
 int main() {
 	//Initializing parameters//
@@ -25,46 +22,30 @@ int main() {
 	std::default_random_engine generator;
 	std::normal_distribution<double> dist(mean, stddev);
 
+	fstream OutFile("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Output.txt", ios::in);
+	fstream InFile("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Input.txt", ios::in);
 
-	for (int i = 0; i < 100; i++) {
-		Y[i] = counter + 10; //OUTPUTS OF SYSTEM
-		X[i] = counter; //INPUTS OF SYSTEM
-		counter += 1.;
-	}
-	for (int i = 100; i < 200; i++) {
-		Y[i] = 50.; //OUTPUTS OF SYSTEM
-		X[i] = counter; //INPUTS OF SYSTEM
-		counter += 1.;
-	}
-
-	for (int i = 200; i < 300; i++) {
-		Y[i] = counter - 50.; //OUTPUTS OF SYSTEM
-		X[i] = counter; //INPUTS OF SYSTEM
-		counter += 1.;
+	double value;
+	int i = 0;
+	while (OutFile >> value)
+	{
+		Y[i] = value;
+		i++;
 	}
 
-	for (int i = 300; i < 400; i++) {
-		Y[i] = 20.; //OUTPUTS OF SYSTEM
-		X[i] = counter; //INPUTS OF SYSTEM
-		counter += 1.;
+	i = 0;
+
+	while (InFile >> value)
+	{
+		X[i] = value;
+		i++;
 	}
 
-	for (int i = 400; i < 500; i++) {
-		Y[i] = 0.4*(i-398.)*(i-398.) - 2.*(i-398.) + 1.; //OUTPUTS OF SYSTEM
-		X[i] = counter; //INPUTS OF SYSTEM
-		counter += 1.;
-	}
 
 	// Add Gaussian noise and Write Output//
-	ofstream outFile0;
-	outFile0.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Output.txt");
 	for (int i = 0; i < 500; i++) {
 		//Y[i] = Y[i] + dist(generator);
-		outFile0 << Y[i] << " ";
 	}
-	outFile0.close();
-	
-	
 
 	//Test the "Set" and "Get" Functions in the class//
 	PolyRLS<double, 2> Test_Alg(1., 10000);
@@ -202,8 +183,6 @@ int main() {
 	cout << "|--------- or 0.0002 -> -5.8---------|";
 	cout << '\n';
 
-
-
 	//Test 4 : Testing Generalized RLS_Estimation function
 	cout << "|---------Now we are going to test the generalized RLS function with the regressors of the---------|" << endl;
 	cout << "|---------polynomial to check the results---------|" << endl;
@@ -234,7 +213,6 @@ int main() {
 	cout << "Initial Covariance function : " << Test_Gen.getCovar() << endl;
 	cout << '\n';
 
-
 	//Change some parameters with "Set" and test them again//
 	Test_Gen.setLambda(0.5);
 	Test_Gen.setCovariance(5000);
@@ -242,7 +220,6 @@ int main() {
 	cout << '\n';
 	cout << "New initial covariancce : " << Test_Gen.getCovar() << endl;
 	cout << '\n';
-
 
 	//Test "reset" function//
 	cout << "Testing reset function : " << endl;
@@ -299,8 +276,6 @@ int main() {
 	outFileGen3.close();
 	outFile_out_Gen.close();
 
-
-
 	//Test 6: Testing Rectangular Window Approach
 	BlockRLS<double, 3> Test_Block(0.9,10, 100000.);
 	cout << "|---------Now we are going to test the Block RLS function with the regressors of the---------|" << endl;
@@ -336,4 +311,4 @@ int main() {
 	outFile_out_Block.close();
 
 	return 0;
-}*/
+}

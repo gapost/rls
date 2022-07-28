@@ -65,10 +65,9 @@
   <ItemGroup>
     <ClCompile Include="RLS_testing.cpp" />
     <ClCompile Include="Block_Test.cpp" />
+    <ClCompile Include="Mat_Maker.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Users\Nikos\Documents\qbMatrix_Big.h" />
-    <ClInclude Include="..\..\Users\Nikos\Documents\qbVector.h" />
     <ClInclude Include="RLS_Estimation_Object.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

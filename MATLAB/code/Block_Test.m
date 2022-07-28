@@ -2,15 +2,12 @@ clear all;
 obj = recursiveLS(3, 'History','Finite','WindowLength',10);
 obj.ForgettingFactor = 1;
 
-S1 = load('..\rls\MATLAB\MAT_Files\output.mat');
+output =   dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test_Output.txt");
 S2 = load('..\rls\MATLAB\MAT_Files\input.mat');
 S3 = load('..\rls\MATLAB\MAT_Files\true_a0.mat');
 S4 = load('..\rls\MATLAB\MAT_Files\true_a1.mat');
 S5 = load('..\rls\MATLAB\MAT_Files\true_a2.mat');
 
-output = S1.output();
-noise = wgn(1,500,1);
-output = noise + output;
 
 input  = S2.input();
 true_a0 = S3.true_a0();

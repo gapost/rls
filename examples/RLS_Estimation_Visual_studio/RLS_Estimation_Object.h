@@ -60,7 +60,7 @@ namespace RLS {
 			}
 
 			temp = P_matrix * phi;
-
+		
 			//Set gain vector
 			K = temp / (dot(phi, temp) + lambda);
 
@@ -72,7 +72,6 @@ namespace RLS {
 			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//Calculation of new covariance//
-
 			for (int i = 0; i < N; i++) {
 				P_matrix(i, i) -= K(i) * temp(i);
 				P_matrix(i, i) /= lambda;
@@ -148,7 +147,7 @@ namespace RLS {
 			}
 
 			temp = P_matrix * phi;
-
+			
 			//Set gain vector
 			K = temp / (dot(phi, temp) + lambda);
 
@@ -158,7 +157,7 @@ namespace RLS {
 
 			//Calculation of new parameters//
 			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-
+			
 			//Calculation of new covariance//
 
 			for (int i = 0; i < N; i++) {
