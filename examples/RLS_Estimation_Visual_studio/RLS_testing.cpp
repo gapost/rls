@@ -16,12 +16,6 @@ int main() {
 	double X[len] = { 0. };
 	
 
-	double counter = 0.;
-	const double mean = 0.0;
-	const double stddev = 5;
-	std::default_random_engine generator;
-	std::normal_distribution<double> dist(mean, stddev);
-
 	fstream OutFile("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Output.txt", ios::in);
 	fstream InFile("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Input.txt", ios::in);
 
@@ -42,10 +36,7 @@ int main() {
 	}
 
 
-	// Add Gaussian noise and Write Output//
-	for (int i = 0; i < 500; i++) {
-		//Y[i] = Y[i] + dist(generator);
-	}
+	
 
 	//Test the "Set" and "Get" Functions in the class//
 	PolyRLS<double, 2> Test_Alg(1., 10000);
@@ -277,7 +268,7 @@ int main() {
 	outFile_out_Gen.close();
 
 	//Test 6: Testing Rectangular Window Approach
-	BlockRLS<double, 3> Test_Block(0.9,10, 100000.);
+	BlockRLS<double, 3> Test_Block(1,10, 10000.);
 	cout << "|---------Now we are going to test the Block RLS function with the regressors of the---------|" << endl;
 	cout << "|---------polynomial to check the results---------|" << endl;
 	cout << '\n';

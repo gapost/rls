@@ -5,6 +5,7 @@
 #include <armadillo>
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include <stdexcept>
 
 using namespace arma;
@@ -191,11 +192,15 @@ namespace RLS {
 	public:
 		BlockRLS(double lam,int win, double init)
 			: RLS_Estimator<T, N>(lam, init),
-			  window(win),
-			  check(0),
-			  pout(Type_Vec(win+1, fill::zeros)),
-			  pin(Type_Mat(N, win+1,fill::zeros)),
-			  remove(false){}
+			window(win),
+			check(0),
+			pout(Type_Vec(win + 1, fill::zeros)),
+			pin(Type_Mat(N, win + 1, fill::zeros)),
+			remove(false) {
+			for (int i = 0; i < N; i++) {
+				pin(i, win - N + i) = 1. / sqrt(init_covar);
+			}
+		}
 		void update_par(vec& x, T data){
 
 			for (int i = 0; i < N; i++) {
@@ -236,30 +241,29 @@ namespace RLS {
 				}
 			}
 			num_update += 1; //Update number of iterations
-			if (remove) {
-				temp = P_matrix * pin.col(0);
+	
+			temp = P_matrix * pin.col(0);
 
-				K = temp / (lambda - dot(pin.col(0), temp));
+			K = temp / (lambda - dot(pin.col(0), temp));
 
-				error = pout(0) - dot(pin.col(0), theta);
-				//CALCULATION OF  NEW PARAMETERS//
+			error = pout(0) - dot(pin.col(0), theta);
+			//CALCULATION OF  NEW PARAMETERS//
 
-				//cost = lambda * cost + error * error;
+			//cost = lambda * cost + error * error;
 
-				theta -= K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-				for (int i = 0; i < N; i++) {
-					P_matrix(i, i) += K(i) * temp(i);
-					P_matrix(i, i) /= lambda;
-					for (int j = 0; j < i; j++) {
-						P_matrix(i, j) += K(i) * temp(j);
-						P_matrix(i, j) /= lambda;
-						//Matrix is symmetric - assign values for less computations
-						P_matrix(j, i) = P_matrix(i, j);
+			theta -= K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+			for (int i = 0; i < N; i++) {
+				P_matrix(i, i) += K(i) * temp(i);
+				P_matrix(i, i) /= lambda;
+				for (int j = 0; j < i; j++) {
+					P_matrix(i, j) += K(i) * temp(j);
+					P_matrix(i, j) /= lambda;
+					//Matrix is symmetric - assign values for less computations
+					P_matrix(j, i) = P_matrix(i, j);
 
-					}
 				}
-
 			}
+			
 			
 			
 		};
@@ -271,6 +275,9 @@ namespace RLS {
 			theta = Type_Vec(N, fill::zeros);
 			P_matrix = Type_Mat(N, N, fill::eye) * init_covar;
 			pin = Type_Mat(N, window+1, fill::zeros);
+			for (int i = 0; i < N; i++) {
+				pin(i, win - N + i) = 1. / sqrt(init_covar);
+			}
 			pout = Type_Vec(window+1, fill::zeros);
 			K = Type_Vec(N, fill::zeros);
 			phi = Type_Vec(N, fill::zeros);
