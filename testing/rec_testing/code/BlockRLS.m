@@ -1,13 +1,13 @@
 clear all;
 %Take Data from C++ for graphing in testing\rec_testing%
-output =   dlmread("..\rls\testing\rec_testing\TXT-Files\PolyRLS\Test_Output.txt");
+output =   dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test_Output.txt");
 Test3_a0 = dlmread("..\rls\testing\rec_testing\TXT-Files\BlockRLS\TestBlock_Param_a0.txt");
 Test3_a1 = dlmread("..\rls\testing\rec_testing\TXT-Files\BlockRLS\TestBlock_Param_a1.txt");
 Test3_a2 = dlmread("..\rls\testing\rec_testing\TXT-Files\BlockRLS\TestBlock_Param_a2.txt");
 Test3_est = dlmread("..\rls\testing\rec_testing\TXT-Files\BlockRLS\TestBlock_Est_Output.txt");
-S1 = load('..\rls\testing\rec_testing\MAT_Files\true_a0.mat');
-S2 = load('..\rls\testing\rec_testing\MAT_Files\true_a1.mat');
-S3 = load('..\rls\testing\rec_testing\MAT_Files\true_a2.mat');
+S1 = load('..\rls\testing\rec_testing\MAT-Files\true_a0.mat');
+S2 = load('..\rls\testing\rec_testing\MAT-Files\true_a1.mat');
+S3 = load('..\rls\testing\rec_testing\MAT-Files\true_a2.mat');
 
 true_a0 = S1.true_a0();
 true_a1 = S2.true_a1();

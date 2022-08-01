@@ -193,10 +193,9 @@ namespace RLS {
 		BlockRLS(double lam,int win, double init)
 			: RLS_Estimator<T, N>(lam, init),
 			window(win),
-			check(0),
 			pout(Type_Vec(win + 1, fill::zeros)),
-			pin(Type_Mat(N, win + 1, fill::zeros)),
-			remove(false) {
+			pin(Type_Mat(N, win + 1, fill::zeros))
+		 {
 			for (int i = 0; i < N; i++) {
 				pin(i, win - N + i) = 1. / sqrt(init_covar);
 			}
@@ -214,11 +213,8 @@ namespace RLS {
 			
 			pout(window) = data;
 
-			check += 1; //Raise check for when array is full
 			temp = P_matrix * phi;
-			if (check > window ) {
-				remove = true;
-			}
+			
 
 			K = temp / (dot(phi, temp) + lambda);
 
@@ -263,7 +259,7 @@ namespace RLS {
 
 				}
 			}
-			
+
 			
 			
 		};
@@ -276,7 +272,7 @@ namespace RLS {
 			P_matrix = Type_Mat(N, N, fill::eye) * init_covar;
 			pin = Type_Mat(N, window+1, fill::zeros);
 			for (int i = 0; i < N; i++) {
-				pin(i, win - N + i) = 1. / sqrt(init_covar);
+				pin(i, win - N + i) = 1.;
 			}
 			pout = Type_Vec(window+1, fill::zeros);
 			K = Type_Vec(N, fill::zeros);
@@ -284,8 +280,6 @@ namespace RLS {
 			temp = Type_Vec(N, fill::zeros);
 			lambda = 1.;
 			cost = 0;
-			check = 0;
-			remove = false;
 			error = 0;
 			num_update = 0;
 		};

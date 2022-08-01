@@ -2,11 +2,11 @@ clear all;
 obj = recursiveLS(3, 'History','Finite','WindowLength',10);
 obj.ForgettingFactor = 1;
 
-output =   dlmread("..\rls\testing\rec_testing\TXT-Files\PolyRLS\Test_Output.txt");
-S2 = load('..\rls\testing\rec_testing\MAT_Files\input.mat');
-S3 = load('..\rls\testing\rec_testing\MAT_Files\true_a0.mat');
-S4 = load('..\rls\testing\rec_testing\MAT_Files\true_a1.mat');
-S5 = load('..\rls\testing\rec_testing\MAT_Files\true_a2.mat');
+output =   dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test_Output.txt");
+S2 = load('..\rls\testing\rec_testing\MAT-Files\input.mat');
+S3 = load('..\rls\testing\rec_testing\MAT-Files\true_a0.mat');
+S4 = load('..\rls\testing\rec_testing\MAT-Files\true_a1.mat');
+S5 = load('..\rls\testing\rec_testing\MAT-Files\true_a2.mat');
 
 
 input  = S2.input();
