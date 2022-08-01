@@ -1,16 +1,16 @@
 clear all;
-%Take Data from C++ for graphing in MATLAB%
-output =   dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test_Output.txt");
-Test2_a0 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test2_Param_a0.txt");
-Test2_a1 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test2_Param_a1.txt");
-Test3_a0 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test3_Param_a0.txt");
-Test3_a1 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test3_Param_a1.txt");
-Test3_a2 = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test3_Param_a2.txt");
-Test2_est = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test2_Est_Output.txt");
-Test3_est = dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test3_Est_Output.txt");
-S1 = load('..\rls\MATLAB\MAT_Files\true_a0.mat');
-S2 = load('..\rls\MATLAB\MAT_Files\true_a1.mat');
-S3 = load('..\rls\MATLAB\MAT_Files\true_a2.mat');
+%Take Data from C++ for graphing in testing\exp_testing%
+output =   dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test_Output.txt");
+Test2_a0 = dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test2_Param_a0.txt");
+Test2_a1 = dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test2_Param_a1.txt");
+Test3_a0 = dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test3_Param_a0.txt");
+Test3_a1 = dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test3_Param_a1.txt");
+Test3_a2 = dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test3_Param_a2.txt");
+Test2_est = dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test2_Est_Output.txt");
+Test3_est = dlmread("..\rls\testing\exp_testing\TXT-Files\PolyRLS\Test3_Est_Output.txt");
+S1 = load('..\rls\testing\exp_testing\MAT_Files\true_a0.mat');
+S2 = load('..\rls\testing\exp_testing\MAT_Files\true_a1.mat');
+S3 = load('..\rls\testing\exp_testing\MAT_Files\true_a2.mat');
 
 true_a0 = S1.true_a0();
 true_a1 = S2.true_a1();
@@ -52,7 +52,7 @@ title('Parameter a1')
 legend('Real Parameter','Estimated Parameter');
 grid on  
 
-print('C:\Users\nicks\rls\MATLAB\images\RLS_Test2','-dpng','-r0');
+print('C:\Users\nicks\rls\testing\exp_testing\images\RLS_Test2','-dpng','-r0');
 
 figure(2);
 
@@ -102,4 +102,4 @@ title('Parameter a2')
 legend('Real Parameter','Estimated Parameter');
 grid on  
 
-print('..\rls\MATLAB\images\RLS','-dpng',-'r0');
+print('..\rls\testing\exp_testing\images\RLS','-dpng',-'r0');

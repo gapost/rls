@@ -1,12 +1,13 @@
 clear all;
-obj = recursiveLS(3);
-obj.ForgettingFactor = 0.9;
+obj = recursiveLS(3, 'History','Finite','WindowLength',10);
+obj.ForgettingFactor = 1;
 
-output =   dlmread("..\rls\MATLAB\TXT-Files\PolyRLS\Test_Output.txt");
-S2 = load('..\rls\MATLAB\MAT_Files\input.mat');
-S3 = load('..\rls\MATLAB\MAT_Files\true_a0.mat');
-S4 = load('..\rls\MATLAB\MAT_Files\true_a1.mat');
-S5 = load('..\rls\MATLAB\MAT_Files\true_a2.mat');
+output =   dlmread("..\rls\testing\rec_testing\TXT-Files\PolyRLS\Test_Output.txt");
+S2 = load('..\rls\testing\rec_testing\MAT_Files\input.mat');
+S3 = load('..\rls\testing\rec_testing\MAT_Files\true_a0.mat');
+S4 = load('..\rls\testing\rec_testing\MAT_Files\true_a1.mat');
+S5 = load('..\rls\testing\rec_testing\MAT_Files\true_a2.mat');
+
 
 input  = S2.input();
 true_a0 = S3.true_a0();
@@ -67,5 +68,6 @@ title('Parameter a2');
 legend('Real Parameter','Estimated Parameter');
 grid on 
 
-    
-print('..\rls\MATLAB\images\Test3Check','-dpng','-r0');
+
+
+print('..\rls\testing\rec_testing\images\BlockCheck','-dpng','-r0');
