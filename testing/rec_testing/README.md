@@ -28,7 +28,8 @@ The C++ algorithm presented the following:
 
 ![title](images/BlockRLS.png)
 
-The method is general is not every reliable and the parameters are not very well estimated. The C++ works similarly, however, to the implemented method in MATLAB.
+The method is general is not every reliable and the parameters are not very well estimated. The C++ works similarly, however, to the implemented method in MATLAB. It has been noticed that for long periods in which the signal remains truthful to certain parameters, the parameters after a certain change will not 
+be correctly estimated. It is probably required to reset the block to completely remove the influence of past points when large changes are detected.
 
 The matrices required for the MATLAB process are in .mat form in the folder "MAT_Files" and were 
 created using MATLAB.
