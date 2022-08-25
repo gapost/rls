@@ -15,8 +15,8 @@ int main() {
 
 	ofstream outFileOut;
 	ofstream outFileIn;
-	outFileOut.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Output.txt");
-	outFileIn.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Input.txt");
+	outFileOut.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test_Output.txt");
+	outFileIn.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test_Input.txt");
 
 	for (int i = 0; i < 100; i++) {
 		Y[i] = counter + 10; //OUTPUTS OF SYSTEM

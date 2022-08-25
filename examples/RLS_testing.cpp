@@ -16,8 +16,8 @@ int main() {
 	double X[len] = { 0. };
 	
 
-	fstream OutFile("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Output.txt", ios::in);
-	fstream InFile("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Input.txt", ios::in);
+	fstream OutFile("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test_Output.txt", ios::in);
+	fstream InFile("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test_Input.txt", ios::in);
 
 	double value;
 	int i = 0;
@@ -116,9 +116,9 @@ int main() {
 	ofstream outFile1;
 	ofstream outFile2;
 	ofstream outFile_out_2;
-	outFile1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test2_Param_a0.txt");
-	outFile2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test2_Param_a1.txt");
-	outFile_out_2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test2_Est_Output.txt");
+	outFile1.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test2_Param_a0.txt");
+	outFile2.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test2_Param_a1.txt");
+	outFile_out_2.open("C:/Users/Nikos/rls/MATLAB/TXT-Files/PolyRLS/Test2_Est_Output.txt");
 
 	for (int i = 0; i < 500; i++) {
 		cout << "Here is estimated output: " << Alg_2.getEstimatedOutput() << endl;
@@ -146,10 +146,10 @@ int main() {
 	ofstream outFile4;
 	ofstream outFile5;
 	ofstream outFile_out_3;
-	outFile3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test3_Param_a0.txt");
-	outFile4.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test3_Param_a1.txt");
-	outFile5.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test3_Param_a2.txt");
-	outFile_out_3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test3_Est_Output.txt");
+	outFile3.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test3_Param_a0.txt");
+	outFile4.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test3_Param_a1.txt");
+	outFile5.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test3_Param_a2.txt");
+	outFile_out_3.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/PolyRLS/Test3_Est_Output.txt");
 
 	for (int i = 0; i < 500; i++) {
 		cout << "Here is estimated output: " << Alg_3.getEstimatedOutput() << endl;
@@ -241,10 +241,10 @@ int main() {
 	ofstream outFileGen2;
 	ofstream outFileGen3;
 	ofstream outFile_out_Gen;
-	outFileGen1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/GenRLS/TestGen_Param_a0.txt");
-	outFileGen2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/GenRLS/TestGen_Param_a1.txt");
-	outFileGen3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/GenRLS/TestGen_Param_a2.txt");
-	outFile_out_Gen.open("C:/Users/nicks/rls/MATLAB/TXT-Files/GenRLS/TestGen_Est_Output.txt");
+	outFileGen1.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/GenRLS/TestGen_Param_a0.txt");
+	outFileGen2.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/GenRLS/TestGen_Param_a1.txt");
+	outFileGen3.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/GenRLS/TestGen_Param_a2.txt");
+	outFile_out_Gen.open("C:/Users/Nikos/rls/testing/exp_testing/TXT-Files/GenRLS/TestGen_Est_Output.txt");
 
 	for (int i = 0; i < 500; i++) {
 		Reg(1) = i;
@@ -277,10 +277,10 @@ int main() {
 	ofstream outFileBlock2;
 	ofstream outFileBlock3;
 	ofstream outFile_out_Block;
-	outFileBlock1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Param_a0.txt");
-	outFileBlock2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Param_a1.txt");
-	outFileBlock3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Param_a2.txt");
-	outFile_out_Block.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Est_Output.txt");
+	outFileBlock1.open("C:/Users/Nikos/rls/testing/rec_testing/TXT-Files/BlockRLS/TestBlock_Param_a0.txt");
+	outFileBlock2.open("C:/Users/Nikos/rls/testing/rec_testing/TXT-Files/BlockRLS/TestBlock_Param_a1.txt");
+	outFileBlock3.open("C:/Users/Nikos/rls/testing/rec_testing/TXT-Files/BlockRLS/TestBlock_Param_a2.txt");
+	outFile_out_Block.open("C:/Users/Nikos/rls/testing/rec_testing/TXT-Files/BlockRLS/TestBlock_Est_Output.txt");
 	for (int i = 0; i < 500; i++) {
 		Reg(1) = i;
 		Reg(2) = i * i;
