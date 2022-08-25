@@ -14,10 +14,10 @@ int main() {
 	//Generate Data for Validation
 	double Y[len] = { 0. };
 	double X[len] = { 0. };
-	 
+	
 
-	fstream OutFile("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/PolyRLS/Test_Output.txt", ios::in);
-	fstream InFile("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/PolyRLS/Test_Input.txt", ios::in);
+	fstream OutFile("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Output.txt", ios::in);
+	fstream InFile("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test_Input.txt", ios::in);
 
 	double value;
 	int i = 0;
@@ -39,7 +39,7 @@ int main() {
 	
 
 	//Test the "Set" and "Get" Functions in the class//
-	PolyRLS<double, 2> Test_Alg(1., 10000);
+	PolyRLS<double, RLS_Estimator<double>> Test_Alg(2,1., 10000);
 	//Do some updates to notice changes//
 	for (int i = 0; i < 10; i++) {
 		Test_Alg.update_par(Y[i]); // Update parameters 
@@ -91,7 +91,7 @@ int main() {
 	//Initialize some different parameters to check differences//
 	//Test 1 : 2 Parameters and forgetting factor 1
 
-	PolyRLS<double, 2> Alg_1(1., init_covar);
+	PolyRLS<double, RLS_Estimator<double>> Alg_1(2,1., init_covar);
 
 	cout << "|---------First Test : We expect parameters for each area to have errors as every single input is taken in regard---------|" << endl;
 	cout << "|---------and doesn't accurately represent the area.---------|" << endl;
@@ -107,7 +107,7 @@ int main() {
 	
 	//Test 2 : 2 Parameters and forgetting factor 0.9
 
-	PolyRLS<double, 2> Alg_2(0.9, init_covar);
+	PolyRLS<double, RLS_Estimator<double>> Alg_2(2,0.9, init_covar);
 
 	cout << "|---------Second Test : We expect parameters to be time-variant and change depending on the output---------|" << endl;
 	cout << "|---------In our case , we should see that it resembles the polynomial we put as input.---------|" << endl;
@@ -116,9 +116,9 @@ int main() {
 	ofstream outFile1;
 	ofstream outFile2;
 	ofstream outFile_out_2;
-	outFile1.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/PolyRLS/Test2_Param_a0.txt");
-	outFile2.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/PolyRLS/Test2_Param_a1.txt");
-	outFile_out_2.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/PolyRLS/Test2_Est_Output.txt");
+	outFile1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test2_Param_a0.txt");
+	outFile2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test2_Param_a1.txt");
+	outFile_out_2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test2_Est_Output.txt");
 
 	for (int i = 0; i < 500; i++) {
 		cout << "Here is estimated output: " << Alg_2.getEstimatedOutput() << endl;
@@ -137,7 +137,7 @@ int main() {
 
 	//Test 3 : 3 Parameters and forgetting factor 0.9
 
-	PolyRLS<double, 3> Alg_3(0.9, init_covar);
+	PolyRLS<double,RLS_Estimator<double>> Alg_3(3,0.9, init_covar);
 
 	cout << "|---------Third Test : We are estimating everything as a 2nd order Polynomial---------|"<< endl;
 
@@ -146,10 +146,10 @@ int main() {
 	ofstream outFile4;
 	ofstream outFile5;
 	ofstream outFile_out_3;
-	outFile3.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/PolyRLS/Test3_Param_a0.txt");
-	outFile4.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/PolyRLS/Test3_Param_a1.txt");
-	outFile5.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/PolyRLS/Test3_Param_a2.txt");
-	outFile_out_3.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/PolyRLS/Test3_Est_Output.txt");
+	outFile3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test3_Param_a0.txt");
+	outFile4.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test3_Param_a1.txt");
+	outFile5.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test3_Param_a2.txt");
+	outFile_out_3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/PolyRLS/Test3_Est_Output.txt");
 
 	for (int i = 0; i < 500; i++) {
 		cout << "Here is estimated output: " << Alg_3.getEstimatedOutput() << endl;
@@ -179,7 +179,7 @@ int main() {
 	cout << "|---------polynomial to check the results---------|" << endl;
 	cout << '\n';
 	vec Reg(3, fill::eye);
-	RLS_Estimator<double, 3> Test_Gen(0.9,100000.);
+	RLS_Estimator<double> Test_Gen(3,0.9,100000.);
 	//Do some updates to notice changes//
 	for (int i = 0; i < 10; i++) {
 		Reg(1) = i;
@@ -241,10 +241,10 @@ int main() {
 	ofstream outFileGen2;
 	ofstream outFileGen3;
 	ofstream outFile_out_Gen;
-	outFileGen1.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/GenRLS/TestGen_Param_a0.txt");
-	outFileGen2.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/GenRLS/TestGen_Param_a1.txt");
-	outFileGen3.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/GenRLS/TestGen_Param_a2.txt");
-	outFile_out_Gen.open("C:/Users/nicks/rls/testing/exp_testing/TXT-Files/GenRLS/TestGen_Est_Output.txt");
+	outFileGen1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/GenRLS/TestGen_Param_a0.txt");
+	outFileGen2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/GenRLS/TestGen_Param_a1.txt");
+	outFileGen3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/GenRLS/TestGen_Param_a2.txt");
+	outFile_out_Gen.open("C:/Users/nicks/rls/MATLAB/TXT-Files/GenRLS/TestGen_Est_Output.txt");
 
 	for (int i = 0; i < 500; i++) {
 		Reg(1) = i;
@@ -268,7 +268,7 @@ int main() {
 	outFile_out_Gen.close();
 
 	//Test 6: Testing Rectangular Window Approach
-	BlockRLS<double, 3> Test_Block(1,10,10000.);
+	BlockRLS<double> Test_Block(3,1,10, 10000.);
 	cout << "|---------Now we are going to test the Block RLS function with the regressors of the---------|" << endl;
 	cout << "|---------polynomial to check the results---------|" << endl;
 	cout << '\n';
@@ -277,10 +277,10 @@ int main() {
 	ofstream outFileBlock2;
 	ofstream outFileBlock3;
 	ofstream outFile_out_Block;
-	outFileBlock1.open("C:/Users/nicks/rls/testing/rec_testing/TXT-Files/BlockRLS/TestBlock_Param_a0.txt");
-	outFileBlock2.open("C:/Users/nicks/rls/testing/rec_testing/TXT-Files/BlockRLS/TestBlock_Param_a1.txt");
-	outFileBlock3.open("C:/Users/nicks/rls/testing/rec_testing/TXT-Files/BlockRLS/TestBlock_Param_a2.txt");
-	outFile_out_Block.open("C:/Users/nicks/rls/testing/rec_testing/TXT-Files/BlockRLS/TestBlock_Est_Output.txt");
+	outFileBlock1.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Param_a0.txt");
+	outFileBlock2.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Param_a1.txt");
+	outFileBlock3.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Param_a2.txt");
+	outFile_out_Block.open("C:/Users/nicks/rls/MATLAB/TXT-Files/BlockRLS/TestBlock_Est_Output.txt");
 	for (int i = 0; i < 500; i++) {
 		Reg(1) = i;
 		Reg(2) = i * i;

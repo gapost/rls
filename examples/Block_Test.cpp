@@ -32,7 +32,7 @@ int main(){
 		counter += 1.;
 	}
 	vec Reg(3, fill::eye);
-	BlockRLS<double, 3> Test_Block(1, len, 10000.);
+	BlockRLS<double> Test_Block(3,1, len, 10000.);
 	for (int i = 0; i < 4 * len; i++) {
 		Reg(1) = i;
 		Reg(2) = i * i;

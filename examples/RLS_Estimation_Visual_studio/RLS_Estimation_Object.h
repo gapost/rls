@@ -13,7 +13,7 @@ using namespace arma;
 
 namespace RLS {
 
-	template <typename T, const int N>
+    template <typename T>
 	class RLS_Estimator {
 	public:
 		static_assert(std::is_arithmetic_v<T>,"The estimator doesn't support string inputs.");
@@ -26,39 +26,31 @@ namespace RLS {
 		double init_covar; //Initial Covariance (Preferably large to declare indiffirence at first iterations//
 		double cost; //Cost function 
 		double error; //Error value
-		Type_Vec phi;
 		Type_Vec theta; //Matrix of Parameters//
 		Type_Mat P_matrix; //Covariance Matrix//
 		Type_Vec K; //Gain Vector//
-		Type_Vec temp;
+        Type_Vec temp; // temporary
 		unsigned long long num_update; //Number of updates//
 
 	public: //Set Defaults Values at Construction of Object//
-		RLS_Estimator(double lam, double init)
-			:np(N), lambda(1.0),
+        RLS_Estimator(int n, double lam, double init)
+            : np(n), lambda(1.0),
 			init_covar(init),
-			theta(Type_Vec(N,fill::zeros)),
-			P_matrix(Type_Mat(N,N,fill::eye)),
-			phi(Type_Vec(N,fill::zeros)),
-			K(Type_Vec(N,fill::zeros)),
-			temp(Type_Vec(N,fill::zeros)),
+            theta(n,fill::zeros),
+            P_matrix(n,n,fill::eye),
+            K(n,fill::zeros),
+            temp(n,fill::zeros),
 			num_update(0),
 			cost(0),
-			error(0){
+            error(0)
+        {
 			setLambda(lam);
 			setCovariance(init);
 			P_matrix = P_matrix * init;
 		}
 
 		// Update of Parameters with New data (data)
-		void update_par(vec &x, T data) {
-			//Pass regressors given in phi matrix
-			if (x.n_rows != phi.n_rows) {
-				throw std::invalid_argument("Matrix of Regressors needs to be change same length as the parameters");
-			}
-			for (int i = 0; i < N; i++) {
-				phi(i) = x(i);
-			}
+        void update_par(const Type_Vec& phi, T data) {
 
 			temp = P_matrix * phi;
 		
@@ -73,7 +65,7 @@ namespace RLS {
 			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			//Calculation of new covariance//
-			for (int i = 0; i < N; i++) {
+            for (int i = 0; i < np; i++) {
 				P_matrix(i, i) -= K(i) * temp(i);
 				P_matrix(i, i) /= lambda;
 				for (int j = 0; j < i; j++) {
@@ -85,7 +77,7 @@ namespace RLS {
 				}
 			};
 			
-			num_update += 1; //Update number of iterations
+            num_update++; //Update number of iterations
 		};
 		//"Set" Functions//
 		void setLambda(double lam) {
@@ -117,95 +109,53 @@ namespace RLS {
 		double getEstimatedOutput(vec& x) const noexcept { return dot(x, theta); }
 		double getCost() const noexcept { return cost; }
 		double getError() const noexcept { return error; }
-		const double getLambda() const noexcept { return lambda; }
-		const double getCovar() const noexcept { return init_covar; }
+        double getLambda() const noexcept { return lambda; }
+        double getCovar() const noexcept { return init_covar; }
 		
 		//Reset Function
 		void reset() noexcept {
-			theta = Type_Vec(N, fill::zeros);
-			P_matrix = Type_Mat(N, N,fill::eye) * init_covar;
-			K = Type_Vec(N, fill::zeros);
-			phi = Type_Vec(N, fill::zeros);
-			temp = Type_Vec(N,fill::zeros);
+            theta.fill(fill::zeros);
+            P_matrix.fill(fill::eye);
+            P_matrix *= init_covar;
+            K.fill(fill::zeros);
 			cost = 0;
 			error = 0;
 			num_update = 0;
 		};
 	};
 
-	//Subclass of RLS_Estimator that implemenets a polynomial estimation of N parameters in regards with time//
-	template <typename T, const int N>
-	class PolyRLS : public RLS_Estimator<T, N> {
+    template <typename T>
+    class BlockRLS: public RLS_Estimator<T> {
+    public:
+        int window; // block size
+        typedef typename RLS_Estimator<T>::Type_Mat Type_Mat;
+        typedef typename RLS_Estimator<T>::Type_Vec Type_Vec;
+        Type_Mat pin;
+        Type_Vec pout;
+        using RLS_Estimator<T>::np;
+        using RLS_Estimator<T>::init_covar;
+        using RLS_Estimator<T>::lambda; //Forgetting Factor
+        using RLS_Estimator<T>::cost; //Cost function
+        using RLS_Estimator<T>::error; //Error value
+        using RLS_Estimator<T>::theta; //Matrix of Parameters
+        using RLS_Estimator<T>::P_matrix; //Covariance Matrix
+        using RLS_Estimator<T>::K; //Gain Vector//
+        using RLS_Estimator<T>::temp;
+        using RLS_Estimator<T>::num_update; //Number of updates
 	public:
-		PolyRLS(double lam, double init)
-			: RLS_Estimator<T, N>(lam, init) {}
-		void update_par(T data) {
-
-			//Set regressors with regards to updates//
-			phi(0) = 1.;
-			for (int i = 1; i < N; i++) {
-				phi(i) = phi(i - 1) * num_update;
-			}
-
-			temp = P_matrix * phi;
-			
-			//Set gain vector
-			K = temp / (dot(phi, temp) + lambda);
-
-			//Calculate error and cost function values
-			error = data - dot(phi, theta);
-			cost = lambda * cost + error * error;
-
-			//Calculation of new parameters//
-			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-			
-			//Calculation of new covariance//
-
-			for (int i = 0; i < N; i++) {
-				P_matrix(i, i) -= K(i) * temp(i);
-				P_matrix(i, i) /= lambda;
-				for (int j = 0; j < i; j++) {
-					P_matrix(i, j) -= K(i) * temp(j);
-					P_matrix(i, j) /= lambda;
-					//Matrix is symmetric - assign values for less computations
-					P_matrix(j, i) = P_matrix(i, j);
-
-				}
-			};
-
-
-
-			num_update += 1; //Update number of iterations
-
-		}
-		double getEstimatedOutput() const noexcept { return dot(phi, theta); }
-	};
-	template <typename T, const int N>
-	class BlockRLS: public RLS_Estimator<T, N> {
-	private: 
-		int check;
-		int window;
-		bool remove;
-		Type_Mat pin;
-		Type_Vec pout;
-		
-	public:
-		BlockRLS(double lam,int win, double init)
-			: RLS_Estimator<T, N>(lam, init),
+        BlockRLS(int n, double lam, int win, double init)
+            : RLS_Estimator<T>(n, lam, init),
 			window(win),
-			check(0),
-			pout(Type_Vec(win + 1, fill::zeros)),
-			pin(Type_Mat(N, win + 1, fill::zeros)),
-			remove(false) {
-			for (int i = 0; i < N; i++) {
-				pin(i, win - N + i) = 1. / sqrt(init_covar);
-			}
-		}
-		void update_par(vec& x, T data){
+            pout(win + 1, fill::zeros),
+            pin(n, win + 1, fill::zeros)
+		 {
+            // initialize regressors according to Zhang 2004
+            for (int i = 0; i < n; i++)
+                pin(i, win - n + i) = 1. / sqrt(init);
 
-			for (int i = 0; i < N; i++) {
-				phi(i) = x(i);
-			}
+		}
+        void update_par(const Type_Vec& phi, T data)
+        {
 
 			pin = shift(pin, -1, 1);
 			pout = shift(pout, -1);
@@ -214,11 +164,8 @@ namespace RLS {
 			
 			pout(window) = data;
 
-			check += 1; //Raise check for when array is full
 			temp = P_matrix * phi;
-			if (check > window ) {
-				remove = true;
-			}
+			
 
 			K = temp / (dot(phi, temp) + lambda);
 
@@ -229,7 +176,7 @@ namespace RLS {
 
 			//CALCULATION OF NEW COVARIANCE MATRIX//
 			
-			for (int i = 0; i < N; i++) {
+            for (int i = 0; i < np; i++) {
 				P_matrix(i, i) -= K(i) * temp(i);
 				P_matrix(i, i) /= lambda;
 				for (int j = 0; j < i; j++) {
@@ -251,8 +198,8 @@ namespace RLS {
 
 			//cost = lambda * cost + error * error;
 
-			theta -= K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-			for (int i = 0; i < N; i++) {
+            theta -= K * error; //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+            for (int i = 0; i < np; i++) {
 				P_matrix(i, i) += K(i) * temp(i);
 				P_matrix(i, i) /= lambda;
 				for (int j = 0; j < i; j++) {
@@ -260,39 +207,84 @@ namespace RLS {
 					P_matrix(i, j) /= lambda;
 					//Matrix is symmetric - assign values for less computations
 					P_matrix(j, i) = P_matrix(i, j);
-
 				}
 			}
-			
-			
-			
+
 		};
 		//Get Function
-		const Type_Vec& getpout() const noexcept { return pout; }
-		const Type_Mat& getpin() const noexcept { return pin; }
+        const typename RLS_Estimator<T>::Type_Vec& getpout() const noexcept { return pout; }
+        const typename RLS_Estimator<T>::Type_Mat& getpin() const noexcept { return pin; }
+        int getWindow() const { return window; }
+
 		//Reset Function
 		void reset() noexcept {
-			theta = Type_Vec(N, fill::zeros);
-			P_matrix = Type_Mat(N, N, fill::eye) * init_covar;
-			pin = Type_Mat(N, window+1, fill::zeros);
-			for (int i = 0; i < N; i++) {
-				pin(i, win - N + i) = 1. / sqrt(init_covar);
+            RLS_Estimator<T>::reset();
+            pin.fill(fill::zeros);
+            for (int i = 0; i < np; i++) {
+                pin(i, window - np + i) = 1./sqrt(init_covar);
 			}
-			pout = Type_Vec(window+1, fill::zeros);
-			K = Type_Vec(N, fill::zeros);
-			phi = Type_Vec(N, fill::zeros);
-			temp = Type_Vec(N, fill::zeros);
-			lambda = 1.;
-			cost = 0;
-			check = 0;
-			remove = false;
-			error = 0;
-			num_update = 0;
+            pout.fill(fill::zeros);
 		};
 
 
 	};
-};
+
+    //Subclass of RLS_Estimator that implemenets a polynomial estimation
+    template <typename T, class Estimator>
+    class PolyRLS : public Estimator
+    {
+    };
+
+    template<typename T>
+    class PolyRLS<T, RLS_Estimator<T>> : public RLS_Estimator<T>
+    {
+        typename RLS_Estimator<T>::Type_Vec phi;
+      public:
+        PolyRLS(int n, double lam, double init) :
+            RLS_Estimator<T>(n, lam, init),
+            phi(n, fill::ones)
+        {}
+        void update_par(T data) {
+
+            //Set regressors with regards to updates//
+            // phi(0) = 1.; this is set in constructor
+            for (int i = 1; i < this->np; i++) {
+                phi(i) = phi(i - 1) * this->num_update;
+            }
+
+            RLS_Estimator<T>::update_par(phi, data);
+
+        }
+        double getEstimatedOutput() const noexcept { return dot(phi, this->theta); }
+    };
+
+    template<typename T>
+    class PolyRLS<T, BlockRLS<T>> : public BlockRLS<T>
+    {
+        typename BlockRLS<T>::Type_Vec phi;
+      public:
+        PolyRLS(int n, double lam, int w, double init) :
+            BlockRLS<T>(n, lam, w, init),
+            phi(n, fill::ones)
+        {}
+        void update_par(T data) {
+
+            //Set regressors with regards to updates//
+            // phi(0) = 1.; this is set in constructor
+            for (int i = 1; i < this->np; i++) {
+                phi(i) = phi(i - 1) * this->num_update;
+            }
+
+            BlockRLS<T>::update_par(phi, data);
+
+        }
+        double getEstimatedOutput() const noexcept { return dot(phi, this->theta); }
+    };
+
+
+
+} // namespace RLS
+
 #endif
 
 

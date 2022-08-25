@@ -39,7 +39,7 @@ int main() {
 	
 
 	//Test the "Set" and "Get" Functions in the class//
-	PolyRLS<double, 2> Test_Alg(1., 10000);
+	PolyRLS<double, RLS_Estimator<double>> Test_Alg(2,1., 10000);
 	//Do some updates to notice changes//
 	for (int i = 0; i < 10; i++) {
 		Test_Alg.update_par(Y[i]); // Update parameters 
@@ -91,7 +91,7 @@ int main() {
 	//Initialize some different parameters to check differences//
 	//Test 1 : 2 Parameters and forgetting factor 1
 
-	PolyRLS<double, 2> Alg_1(1., init_covar);
+	PolyRLS<double, RLS_Estimator<double>> Alg_1(2,1., init_covar);
 
 	cout << "|---------First Test : We expect parameters for each area to have errors as every single input is taken in regard---------|" << endl;
 	cout << "|---------and doesn't accurately represent the area.---------|" << endl;
@@ -107,7 +107,7 @@ int main() {
 	
 	//Test 2 : 2 Parameters and forgetting factor 0.9
 
-	PolyRLS<double, 2> Alg_2(0.9, init_covar);
+	PolyRLS<double, RLS_Estimator<double>> Alg_2(2,0.9, init_covar);
 
 	cout << "|---------Second Test : We expect parameters to be time-variant and change depending on the output---------|" << endl;
 	cout << "|---------In our case , we should see that it resembles the polynomial we put as input.---------|" << endl;
@@ -137,7 +137,7 @@ int main() {
 
 	//Test 3 : 3 Parameters and forgetting factor 0.9
 
-	PolyRLS<double, 3> Alg_3(0.9, init_covar);
+	PolyRLS<double,RLS_Estimator<double>> Alg_3(3,0.9, init_covar);
 
 	cout << "|---------Third Test : We are estimating everything as a 2nd order Polynomial---------|"<< endl;
 
@@ -179,7 +179,7 @@ int main() {
 	cout << "|---------polynomial to check the results---------|" << endl;
 	cout << '\n';
 	vec Reg(3, fill::eye);
-	RLS_Estimator<double, 3> Test_Gen(0.9,100000.);
+	RLS_Estimator<double> Test_Gen(3,0.9,100000.);
 	//Do some updates to notice changes//
 	for (int i = 0; i < 10; i++) {
 		Reg(1) = i;
@@ -268,7 +268,7 @@ int main() {
 	outFile_out_Gen.close();
 
 	//Test 6: Testing Rectangular Window Approach
-	BlockRLS<double, 3> Test_Block(1,10, 10000.);
+	BlockRLS<double> Test_Block(3,1,10, 10000.);
 	cout << "|---------Now we are going to test the Block RLS function with the regressors of the---------|" << endl;
 	cout << "|---------polynomial to check the results---------|" << endl;
 	cout << '\n';
