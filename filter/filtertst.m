@@ -21,6 +21,10 @@ for i=Nmid+1:Nc,
   Y(i) = Y(i-1)*(1-1/20);
 end
 
+
+noise = rand(size(Y))*2-1;
+Y = Y + 0.02*max(Y)*noise;
+
 save in.dat -ascii Y
 
 cmd = '.build/rlsfilter ';
