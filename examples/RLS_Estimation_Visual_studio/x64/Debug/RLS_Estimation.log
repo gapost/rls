@@ -1,5 +1,0 @@
-﻿  RLS_Estimation.cpp
-C:\Users\nicks\rls\examples\RLS_Estimation_Visual_studio\RLS_Estimation.cpp(4,10): fatal error C1083: Cannot open include file: 'C:\armadillo-11.2.1\examples\Header.h': No such file or directory
-  RLS_testing.cpp
-C:\Users\nicks\rls\source\RLS_Estimation_Object.h(5,10): fatal error C1083: Cannot open include file: 'armadillo': No such file or directory
-  Generating Code...
