@@ -28,7 +28,7 @@ void testFF(const double* Y, int len,int factors ,double init_covar)
 
 	//Print output of parameters from the generalized class in .txt file
     ofstream out;
-    out.open ("TextFiles/FF.txt");
+    out.open ("build/FF.txt");
 
 	for (int i = 0; i < len; i++) {
 		for (int j=0; j<factors; j++){	//update polinomial factors
@@ -59,7 +59,7 @@ void testWindow(const double* Y, int len,int factors ,double init_covar)
     ofstream a1;
     ofstream out;
 
-    out.open ("TextFiles/RecWin.txt");
+    out.open ("build/RecWin.txt");
 
 	for (int i = 0; i < len; i++) {
 		for (int j=0; j<factors; j++){	//update polinomial factors
@@ -82,7 +82,7 @@ int main() {
 	//Generate Data for Validation
 	double Y[len]; 
 	ofstream SignalFile;
-	SignalFile.open ("TextFiles/Signal.txt");
+	SignalFile.open ("build/Signal.txt");
 
 	for (int i = 0; i < 2*len/5; i++) {
 		Y[i]=1.0 + 0.1*(2.0*rand()/RAND_MAX-1.0);
@@ -98,7 +98,6 @@ int main() {
 
     testFF( Y, len,factors, init_covar);
 	testWindow( Y, len,factors, init_covar);
-    //system("bash TextFiles/corections.sh"); // erase 'space' from txt files becouse they cause problems in matlab
 
 return 0;
 }
