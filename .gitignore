@@ -1,5 +1,6 @@
 ## for cmake
 .build
+build
 
 ## from github/gitignore/CMake
 CMakeLists.txt.user
