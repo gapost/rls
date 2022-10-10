@@ -3,20 +3,23 @@
 #include <random>
 #include <fstream>
 #include <typeinfo>
-#include "/home/vd/rls/source/RLS_Estimation_Object.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <Eigen/Dense>
 
+#include "../../source/RLS_Estimation_Object.h"
+
 using namespace RLS;
 using namespace std;
 
-void testFF(const double* Y, double ff, int len ,double init_covar)
+#define real double
+
+void testFF(const real* Y, real ff, int len , real init_covar)
 
 {  	
-	typedef Matrix< float, Dynamic, 1 > Vec;
+	typedef Matrix< real, Dynamic, 1 > Vec;
     Vec RegF=Vec::Identity(2,1);
-   	RLS_Estimator<double> Test_Gen(2, ff ,init_covar);  // (Number of factors ,Forgeting factor, Initial Covarience function)
+   	RLS_Estimator<real> Test_Gen(2, ff ,init_covar);  // (Number of factors ,Forgeting factor, Initial Covarience function)
 
 	//Print output of parameters from the generalized class in .txt file
     ofstream out;
@@ -29,7 +32,7 @@ void testFF(const double* Y, double ff, int len ,double init_covar)
 		out << Test_Gen.getEstimatedOutput(RegF)<<'\t' << (Test_Gen.getEstimatedParameters()(0)) << "\t" << (Test_Gen.getEstimatedParameters()(1)) << endl;	
 		}
    		out.close();
-    }
+}
 
 void testWindow(const double* Y, int len,double ff, int win ,double init_covar)
 {

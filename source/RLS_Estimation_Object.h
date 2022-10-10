@@ -18,8 +18,8 @@ namespace RLS {
 	class RLS_Estimator {
 	public:
 		static_assert(std::is_arithmetic_v<T>,"The estimator doesn't support string inputs.");
-		typedef Matrix <float , Dynamic, Dynamic > Type_Mat;
-		typedef Matrix< float, Dynamic, 1 > Type_Vec;
+		typedef Matrix <T , Dynamic, Dynamic > Type_Mat;
+		typedef Matrix< T, Dynamic, 1 > Type_Vec;
 
 	protected:
 		int np; //Number of Parameters - Order of Polynomial
