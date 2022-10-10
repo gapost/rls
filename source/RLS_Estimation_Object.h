@@ -174,6 +174,7 @@ namespace RLS {
         {   
 			typedef Matrix <float , Dynamic, Dynamic > Type_Mat;
 
+
             for (int i=0; i<window; i++){
                 pin.col(i)=pin.col(i+1);
             }
