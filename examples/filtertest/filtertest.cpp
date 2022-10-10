@@ -12,14 +12,14 @@
 using namespace RLS;
 using namespace std;
 
-#define real double
+#define real_num double
 
-void testFF(const real* Y, real ff, int len , real init_covar)
+void testFF(const real_num* Y, real_num ff, int len , real_num init_covar)
 
 {  	
-	typedef Matrix< real, Dynamic, 1 > Vec;
+	typedef Matrix< real_num, Dynamic, 1 > Vec;
     Vec RegF=Vec::Identity(2,1);
-   	RLS_Estimator<real> Test_Gen(2, ff ,init_covar);  // (Number of factors ,Forgeting factor, Initial Covarience function)
+   	RLS_Estimator<real_num> Test_Gen(2, ff ,init_covar);  // (Number of factors ,Forgeting factor, Initial Covarience function)
 
 	//Print output of parameters from the generalized class in .txt file
     ofstream out;
@@ -34,11 +34,11 @@ void testFF(const real* Y, real ff, int len , real init_covar)
    		out.close();
 }
 
-void testWindow(const double* Y, int len,double ff, int win ,double init_covar)
+void testWindow(const real_num* Y, int len,real_num ff, int win ,real_num init_covar)
 {
-    typedef Matrix< float, Dynamic, 1 > Vec;
+    typedef Matrix< real_num, Dynamic, 1 > Vec;
     Vec RegW=Vec::Identity(2,1);
-    BlockRLS<double> Test_Block (2, ff , win, init_covar);
+    BlockRLS<real_num> Test_Block (2, ff , win, init_covar);
 
 	//Check output of parameters from the generalized class
    	ofstream out;
@@ -66,28 +66,35 @@ int main() {
 
 	//Initializing parameters//
 	int len = 1000; //Length of Array of Output/Input-Iteration function
-	double init_covar = 80;
-	double ff = 0.97; 
+	real_num init_covar = 80;
+	real_num ff = 0.97; 
 	int window_size =80;
 
 	//Initializing random signal
-	double Y[len]; 
+	real_num Y[len]; 
 	ofstream SignalFile;
 	SignalFile.open ("build/Signal.txt");
+
 	for (int i = 0; i < 2*len/8; i++) {
-		Y[i]=2.0 + 0.1*(2.0*rand()/RAND_MAX-1.0);
+		Y[i]=1.1 + 0.1*(2.0*rand()/RAND_MAX-1.0);
 		SignalFile<<Y[i]<<'\n';
 	}
 	for (int i = 2*len/8; i <3*len/8; i++) {
 
-		Y[i]=0.70 + 0.1*(2.0*rand()/RAND_MAX-1.0);
+		Y[i]=0.90 + 0.1*(2.0*rand()/RAND_MAX-1.0);
 		SignalFile<<Y[i]<<'\n';
 	}
-	for (int i = 3*len/8; i < len; i++) {
+	for (int i = 3*len/8; i < 5*len/8; i++) {
 
 		Y[i]=1.3 + 0.1*(2.0*rand()/RAND_MAX-1.0);
 		SignalFile<<Y[i]<<'\n';
 	}
+	for (int i = 5*len/8; i < len; i++) {
+
+		Y[i]=1.2 + 0.1*(2.0*rand()/RAND_MAX-1.0);
+		SignalFile<<Y[i]<<'\n';
+	}	
+
 	SignalFile.close();
 	
 	//Call Estimating Functions
