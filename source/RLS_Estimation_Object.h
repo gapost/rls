@@ -327,8 +327,6 @@ namespace RLS {
     };
 	 */
 
-
-
 } // namespace RLS
 
 #endif
