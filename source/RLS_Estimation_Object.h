@@ -71,10 +71,6 @@ namespace RLS {
 
 			//Calculation of new parameters//
 			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-			//cout<<"\nafto to ypoxthonio theta=\n"<<theta<<endl;
-			//cout<<"\nafto to ypoxthonio error=\n"<<error<<endl;
-			//cout<<"\nafto to ypoxthonio phi=\n"<<phi<<endl;
-			//cout << "\nnew parameters:\n" << theta <<endl;
 			
 			//Calculation of new covariance//
             for (int i = 0; i < np; i++) {
@@ -119,7 +115,6 @@ namespace RLS {
 		const Type_Vec & getGains() const noexcept { return K; }
 		int getIterations() const noexcept { return num_update;  }
 		real_num getEstimatedOutput(Type_Vec& x) const noexcept { 
-			//cout<<"\nx=\n"<<x<<"\ntheta=\n"<<theta<<"\n it returns:"<<x.dot(theta)<<endl;
 			return x.dot(theta); } //x=Reg!, theta=new parameters
 		real_num getCost() const noexcept { return cost; }
 		real_num getError() const noexcept { return error; }
@@ -173,23 +168,21 @@ namespace RLS {
         void update_par(const Type_Vec& phi, real_num data)
         {   
 			typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
-
-
+			
+			// shift elements 
             for (int i=0; i<window; i++){
                 pin.col(i)=pin.col(i+1);
             }
             pin.col(window)=phi;
-
             for (int i=0; i<window; i++){
 			pout(i)=pout(i+1);
 			}
 			pout(window)=data;
-			
+			// end of shift 
+
             temp.setZero();
 			temp = P_matrix * phi;
-			if ((phi.dot(temp) + lambda)==0){
-			//cout<<"\nwhat if its zero:\n"<<(phi.dot(temp) + lambda)<<endl;
-			}			
+
 			K = (temp) / (phi.dot(temp) + lambda); 	// Gain Vector
 			error = data - theta.dot(phi);			// Error Value
 
