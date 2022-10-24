@@ -19,18 +19,13 @@ void nonrecurciveUpdate( Mat Phi, Vec Y)
     ofstream ThetaFile("build/Theta.txt",  ios::out | ios::app);
     ThetaFile<<"\t"<<Theta(0,0)<<"\t"<<Theta(1,0)<<"\t";
     ThetaFile.close();
-
+   
    }
 
 void recurciveUpdate(int i, LLT<Eigen::Matrix2f> llt, Mat Phi, Vec Y)
 {
-    Vec v(2,1);
-    v(0,0)=1;    
-    v(1,0)=i+1;
-    
-    llt.rankUpdate( v, 1);                                      //update directly L matrix instread of re-computing L through A
     Vec Theta = llt.solve(Phi.adjoint()*Y);
-    
+
     ofstream ThetaFile("build/Theta.txt",  ios::out | ios::app);
     ThetaFile<<"\t"<<Theta(0,0)<<"\t"<<Theta(1,0)<<"\n";
     ThetaFile.close();
@@ -43,28 +38,54 @@ int main(){
     system("rm build/Signal.txt");
 
     LLT<Eigen::Matrix2f> llt;
-    int m=50;
+    int m=250;
     Vec Y(m);
     Vec Theta;
     
-    //create and fill Phi matrix
+    // create and fill Phi matrix
     Mat Phi(m,2);               // mx2
     ofstream SignalFile("build/Signal.txt",  ios::out | ios::app);
-    for (int i=0; i<m; i++){
+   
+    for (int i=0; i<60; i++){
         Phi(i,0)=1;
         Phi(i,1)=i+1;
-        Y(i)= 5 + 0.02*rand()/RAND_MAX-1.0;
+        Y(i)= 5 + 0.5*rand()/RAND_MAX;
     }
+    for (int i=60; i<100; i++){
+        Phi(i,0)=1;
+        Phi(i,1)=i+1;
+        Y(i)= 5 + 0.5*rand()/RAND_MAX;
+    }
+    for (int i=100; i<160; i++){
+        Phi(i,0)=1;
+        Phi(i,1)=i+1;
+        Y(i)= 4 + 0.5*rand()/RAND_MAX;
+    }
+    for (int i=160; i<250; i++){
+        Phi(i,0)=1;
+        Phi(i,1)=i+1;
+        Y(i)= 6 + 0.5*rand()/RAND_MAX;
+    }
+
     SignalFile<<Y<<endl;
     SignalFile.close();
 
-    //compute Cholesky matrix -> for the first n elements
+    // Compute Cholesky matrix -> for the first n elements
     Mat A=((Phi.topLeftCorner(1, 2)).adjoint())*Phi.topLeftCorner(1, 2);  // 4x4
     llt.compute(A);             // 4x4
+    
+    // Matrix used to update llt
+    Vec v(2,1);
+    v(0,0)=1;    
+    int j=100;
+    cout<< Phi.topLeftCorner(j, 2)<<"\n\n\n"<<Y.topLeftCorner(j, 1)<<"\n\n\n";
 
-    //Update Phi and Cholesky matrix
+    // Update Cholesky matrix and compute Theta again
     for(int j=0; j<m; j++){
         nonrecurciveUpdate(Phi.topLeftCorner(j, 2), Y.topLeftCorner(j, 1)); 
+
+        v(1,0)=j+1;
+        llt.rankUpdate( v, 1);    //update directly L matrix instread of re-computing L through A
         recurciveUpdate(j, llt, Phi.topLeftCorner(j, 2), Y.topLeftCorner(j, 1));
     }
 
