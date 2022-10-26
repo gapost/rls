@@ -22,28 +22,28 @@ namespace RLS {
 		typedef Matrix< real_num, Dynamic, 1 > Type_Vec;
 
 	protected:
-		int np; //Number of Parameters - Order of Polynomial
-		real_num lambda; //Forgetting Factor
-		real_num init_covar; //Initial Covariance (Preferably large to declare indiffirence at first iterations//
-		real_num cost; //Cost function 
-		real_num error; //Error value
-		Type_Vec theta; //Matrix of Parameters//
-		Type_Mat P_matrix; //Covariance Matrix//
-		Type_Vec K; //Gain Vector//
-        Type_Vec temp; // temporary
-		unsigned long long num_update; //Number of updates//
+		int np; 										// Number of Parameters - Order of Polynomial
+		real_num lambda; 								// Forgetting Factor
+		real_num init_covar; 							// Initial Covariance (Preferably large to declare indiffirence at first iterations//
+		real_num cost; 									// Cost function 
+		real_num error; 								// Error value
+		Type_Vec theta; 								// Matrix of Parameters//
+		Type_Mat P_matrix;								// Covariance Matrix//
+		Type_Vec K; 									// Gain Vector//
+        Type_Vec temp; 									// temporary
+		unsigned long long num_update; 					// Number of updates//
 
-	public: //Set Defaults Values at Construction of Object//
-        RLS_Estimator(int n, real_num ff, real_num init) // n: number of factors, ff: forgrting factor, init: Initial Covarience function
+	public: 											//Set Defaults Values at Construction of Object//
+        RLS_Estimator(int n, real_num ff, real_num init)// n: number of factors, ff: forgrting factor, init: Initial Covarience function
             : np(n), lambda(1.0),
 			init_covar(init),
-            theta(n),			// new parameters
-            P_matrix(n,n),		// [1 0 ; 0 1]
-            K(n),				// gain vector
+            theta(n),									// new parameters
+            P_matrix(n,n),								// [1 0 ; 0 1]
+            K(n),										// gain vector
             temp(n),			 
-			num_update(0),		// Update number of iterations
-			cost(0),			// Cost function value
-            error(0)			// Error function value
+			num_update(0),								// Update number of iterations
+			cost(0),									// Cost function value
+            error(0)									// Error function value
         {   
             theta.setZero();
 			K.setZero();
@@ -51,15 +51,13 @@ namespace RLS {
 			temp.setZero();
 			setLambda(ff);
 			setCovariance(init);
-			P_matrix = P_matrix * init;		// [init 0 ; 0 init]
+			P_matrix = P_matrix * init;					// [init 0 ; 0 init]
 
 		}
 
 		// Update of Parameters with New data (data)
         void update_par(const Type_Vec& phi, real_num data) {
 			
-			//cout << "\nphi:\n" << phi << endl;
-
 			temp = P_matrix * phi;
 		
 			//Set gain vector
@@ -70,7 +68,7 @@ namespace RLS {
 			cost = lambda * cost + error * error;
 
 			//Calculation of new parameters//
-			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+			theta += K * (error); 						// Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 			
 			//Calculation of new covariance//
             for (int i = 0; i < np; i++) {
@@ -79,13 +77,12 @@ namespace RLS {
 				for (int j = 0; j < i; j++) {
 					P_matrix(i, j) -= K(i) * temp(j);
 					P_matrix(i, j) /= lambda;
-					//Matrix is symmetric - assign values for less computations
-					P_matrix(j, i) = P_matrix(i, j);
+					P_matrix(j, i) = P_matrix(i, j);	// Matrix is symmetric - assign values for less computations
 
 				}
 			}
 			
-            num_update++; //Update number of iterations
+            num_update++; 								// Update number of iterations
 		};
 		//"Set" Functions//
 		void setLambda(real_num ff) {
@@ -115,7 +112,7 @@ namespace RLS {
 		const Type_Vec & getGains() const noexcept { return K; }
 		int getIterations() const noexcept { return num_update;  }
 		real_num getEstimatedOutput(Type_Vec& x) const noexcept { 
-			return x.dot(theta); } //x=Reg!, theta=new parameters
+			return x.dot(theta); } 						// x=Reg!, theta=new parameters
 		real_num getCost() const noexcept { return cost; }
 		real_num getError() const noexcept { return error; }
         real_num getLambda() const noexcept { return lambda; }
@@ -145,17 +142,17 @@ namespace RLS {
         Type_Vec pout;
         using RLS_Estimator<real_num>::np;
         using RLS_Estimator<real_num>::init_covar;
-        using RLS_Estimator<real_num>::lambda;		 //Forgetting Factor
-        using RLS_Estimator<real_num>::cost;		 //Cost function
-        using RLS_Estimator<real_num>::error;		 //Error value
-        using RLS_Estimator<real_num>::theta;		 //Matrix of Parameters
-        using RLS_Estimator<real_num>::P_matrix;	 //Covariance Matrix
-        using RLS_Estimator<real_num>::K;			 //Gain Vector
+        using RLS_Estimator<real_num>::lambda;		 	// Forgetting Factor
+        using RLS_Estimator<real_num>::cost;		 	// Cost function
+        using RLS_Estimator<real_num>::error;		 	// Error value
+        using RLS_Estimator<real_num>::theta;		 	// Matrix of Parameters
+        using RLS_Estimator<real_num>::P_matrix;		// Covariance Matrix
+        using RLS_Estimator<real_num>::K;			 	// Gain Vector
         using RLS_Estimator<real_num>::temp;
-        using RLS_Estimator<real_num>::num_update;	 //Number of updates
+        using RLS_Estimator<real_num>::num_update;	 	// Number of updates
 	public:
         BlockRLS(int n, real_num ff, int win, real_num init) // 
-            : RLS_Estimator<real_num>( n, ff, init), //why???
+            : RLS_Estimator<real_num>( n, ff, init), 	// why???
 			window(win),
             pout(win + 1),
             pin(n, win + 1)
@@ -165,7 +162,7 @@ namespace RLS {
                 pin(i, win - n + i) = 1. / sqrt(init);
 
 		}
-        void update_par(const Type_Vec& phi, real_num data)
+        void update_par(const Type_Vec& phi, real_num data) // what is phi? And why do I use it to update my matrix?
         {   
 			typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
 			
@@ -173,23 +170,21 @@ namespace RLS {
             for (int i=0; i<window; i++){
                 pin.col(i)=pin.col(i+1);
             }
-            pin.col(window)=phi;
+            pin.col(window)=phi;						// add phi in the end of the matrix
             for (int i=0; i<window; i++){
 			pout(i)=pout(i+1);
 			}
-			pout(window)=data;
+			pout(window)=data;							// add data in the end of the matrix
 			// end of shift 
 
             temp.setZero();
 			temp = P_matrix * phi;
+			
+			// UPDATE MATRIX //
+			K = temp / (lambda + phi.dot(temp)); 		// Gain Vector
+			error = data - theta.dot(phi);				// Error Value
+			theta += K * (error); 						// Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
-			K = (temp) / (phi.dot(temp) + lambda); 	// Gain Vector
-			error = data - theta.dot(phi);			// Error Value
-
-			//CALCULATION OF  NEW PARAMETERS//
-			theta += K * (error); //Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-
-			//CALCULATION OF NEW COVARIANCE MATRIX//
 			
             for (int i = 0; i < np; i++) {
 				P_matrix(i, i) -= K(i) * temp(i);
@@ -197,29 +192,27 @@ namespace RLS {
 				for (int j = 0; j < i; j++) {
 					P_matrix(i, j) -= K(i) * temp(j);
 					P_matrix(i, j) /= lambda;
-					//Matrix is symmetric - assign values for less computations
-					P_matrix(j, i) = P_matrix(i, j);
-
+					P_matrix(j, i) = P_matrix(i, j);	// Matrix is symmetric - assign values for less computations
 				}
 			}
 
-			num_update += 1; 							//Update number of iterations
-			temp = P_matrix * pin.col(0);
-			K = temp / (lambda - temp.dot(pin.col(0)));
+			// DOWNDATE MATRIX //
+			num_update += 1; 							// Update number of iterations
+			temp = P_matrix * pin.col(0);				// This line take pout into consideration
+			K = temp / (lambda - temp.dot(pin.col(0))); // This line take pout into consideration
 
-			error = pout(0) - theta.dot(pin.col(0));
+			error = pout(0) - theta.dot(pin.col(0));	// This line take pout and pin int consideration
 			//CALCULATION OF  NEW PARAMETERS//
 			//cost = lambda * cost + error * error;
 
-            theta -= K * error; 						//Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
+            theta -= K * error; 						// Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
             for (int i = 0; i < np; i++) {
 				P_matrix(i, i) += K(i) * temp(i);
 				P_matrix(i, i) /= lambda;
 				for (int j = 0; j < i; j++) {
 					P_matrix(i, j) += K(i) * temp(j);
 					P_matrix(i, j) /= lambda;
-					//Matrix is symmetric - assign values for less computations
-					P_matrix(j, i) = P_matrix(i, j);
+					P_matrix(j, i) = P_matrix(i, j);	// Matrix is symmetric - assign values for less computations
 				}
 			}
 
