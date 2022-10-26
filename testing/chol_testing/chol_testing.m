@@ -14,11 +14,9 @@ R=randi(10,l-m,1); R=(R-mean(R))/max(R); Y(m+1:l,1)=l3+R;
 
 line1=l1*ones(l,1); line2=l2*ones(l,1); line3=l3*ones(l,1);
 x=zeros(l,2);
-for i=1:l
+for i=2:l
   Phi(i,2)=i;
-  A=Phi(1:i,:)'*Phi(1:i,:);
-  d=Phi(1:i,:)'*Y(1:i,:);
-  x(i,:)=lschol(A,d);
+  x(i,:)=lschol(Phi(1:i,:),Y(1:i,:));
 end
 
 figure(1)
