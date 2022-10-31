@@ -9,32 +9,6 @@ using namespace Eigen;
 typedef Matrix <float , Dynamic, Dynamic > Mat;
 typedef Matrix< float, Dynamic, 1 > Vec;
 
-void nonrecurciveUpdate( Mat Phi, Vec Y)
-{
-    LLT<Eigen::Matrix2f> llt;
-
-    Mat A=(Phi.adjoint())*Phi;
-    llt.compute(A);             
-    Vec Theta = llt.solve(Phi.adjoint()*Y);
-
-    Mat S=Phi.bottomLeftCorner(1,2)*(Theta);              //Recreate the Signal     
-    ofstream ThetaFile("Theta.txt",  ios::out | ios::app);
-    ThetaFile<<"\t"<<Theta(0,0)<<"\t"<<Theta(1,0)<<"\t"<<S<<"\t";
-    ThetaFile.close();
-   
-   }
-
-void recurciveUpdate(LLT<Eigen::Matrix2f> llt, Mat Phi, Vec Y)
-{
-    Vec Theta = llt.solve(Phi.adjoint()*Y);
-    Mat S=Phi.bottomLeftCorner(1,2)*(Theta);              //Recreate the Signal     
-
-    ofstream ThetaFile("Theta.txt",  ios::out | ios::app);
-    ThetaFile<<"\t"<<Theta(0,0)<<"\t"<<Theta(1,0)<<"\t"<<S<<"\n";
-    ThetaFile.close();
-
-}
-
 void Aug_Cholesky_Method(Mat L_Aug,Mat Phi)
 {
     Mat Z=(L_Aug.bottomLeftCorner(1,2)).adjoint();
