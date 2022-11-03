@@ -9,38 +9,55 @@ using namespace Eigen;
 typedef Matrix <float , Dynamic, Dynamic > Mat;
 typedef Matrix< float, Dynamic, 1 > Vec;
 
-void Aug_Cholesky_Method(Mat L_Aug,Mat Phi)
+void Aug_Cholesky_Method(Mat L_Aug,Mat Phi ,Vec Y)
 {
     Mat Z=(L_Aug.bottomLeftCorner(1,2)).adjoint();
     Mat L=(L_Aug.topLeftCorner(2,2));
-    
+    //cout <<"\nL=\n"<< L<< endl;
+
     Mat L_inv_tr=L.adjoint();
     L_inv_tr=L_inv_tr.inverse();
 
     Vec Theta = L_inv_tr*Z;
     Mat S=Phi.bottomLeftCorner(1,2)*(Theta);              //Recreate the Signal     
-
+    //cout<<"\n1)Theta=\n"<<Theta<<endl;
     ofstream ThetaFile("Aug_Theta.txt",  ios::out | ios::app);
-    ThetaFile<<Theta(0,0)<<"\t"<<Theta(1,0)<<"\t"<<S<<"\n";
+    ThetaFile<<Theta(0,0)<<"\t"<<Theta(1,0)<<"\t"<<S<<"\t"<<Y.bottomLeftCorner(1,1)<<"\n";
     ThetaFile.close();
 }
+void Aug_Cholesky_Method2(Mat L_Aug,Mat Phi ,Vec Y)       
+{ 
+    Mat Theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
+    Mat L=(L_Aug.topLeftCorner(2,2));
 
+    Mat I = Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic>::Identity(L_Aug.rows(), L_Aug.cols());
+
+    //    L.triangularView<Eigen::Lower>().solveInPlace(Theta); -> dinei to Reconstracted stin thesi to theta0!!!!!!!!!
+
+    (L.adjoint()).triangularView<Eigen::Upper>().solveInPlace(Theta); 
+    Mat S=Phi.bottomLeftCorner(1,2)*(Theta);              //Recreate the Signal     
+        
+    ofstream ThetaFile("Aug_Theta2.txt",  ios::out | ios::app);
+    ThetaFile<<Theta(0,0)<<"\t"<<Theta(1,0)<<"\t"<<S<<"\t"<<Y.bottomLeftCorner(1,1)<<"\n";
+    ThetaFile.close();
+}
 int main(){
     
     system("rm Aug_Theta.txt");
+    system("rm Aug_Theta2.txt");
 
     int   l=2500, m=1500, n=800;
-    float l1=4.8, l2=5.3, l3=3.4;
+    float l1=1.8, l2=5.3, l3=6.4;
 
     
     Vec Y(l);
     //Vec Theta;
     
     // create and fill Phi matrix
-    Mat Phi(l,2);               // l x 2
+    Mat Phi(l,2);                                         // l x 2
     
-    random_device rd;  // Will be used to obtain a seed for the random number engine
-    mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+    random_device rd;                                     // Will be used to obtain a seed for the random number engine
+    mt19937 gen(rd());                                    // Standard mersenne_twister_engine seeded with rd()
     uniform_real_distribution<> dis(-0.5, 0.5);
 
     for (int i=0; i<n; i++){
@@ -64,9 +81,9 @@ int main(){
     SignalFile<<Y<<endl;
     SignalFile.close();
 
-    // Augmented Cholesky
+    // Compute Cholesky matrix -> for the first n elements
     int start=25;
-    const int win=80;
+    const int win =80;
 
     Mat Phi_Aug(l,3);
     Phi_Aug.setZero();
@@ -76,7 +93,8 @@ int main(){
     Mat A_Aug=Phi_Aug.adjoint()*Phi_Aug;
     LLT<Mat> llt(A_Aug);
     Mat L_Aug =llt.matrixL();
-    Aug_Cholesky_Method(L_Aug,Phi.topLeftCorner(start, 2));
+    Aug_Cholesky_Method(L_Aug,Phi.topLeftCorner(start, 2),Y.topLeftCorner(start, 1));
+    Aug_Cholesky_Method2(L_Aug,Phi.topLeftCorner(start, 2),Y.topLeftCorner(start, 1));
 
     // Matrix used to update llt
     Vec v(3,1);
@@ -88,21 +106,23 @@ int main(){
         if(j>win){
             v(1,0)=j;
             v(2,0)=Y(j);
-            llt.rankUpdate( v, 1);    //update directly L matrix instread of re-computing L through A
+            llt.rankUpdate( v, 1);                        //update directly L matrix instread of re-computing L through A
             v(1,0)=j-win;
             v(2,0)=Y(j-win);
-            llt.rankUpdate( v, -1);    //downdate directly L matrix instread of re-computing L through A
+            llt.rankUpdate( v, -1);                       //downdate directly L matrix instread of re-computing L through A
             L_Aug=llt.matrixL(); 
             
-            Aug_Cholesky_Method(L_Aug, Phi.block<win,2>(j-win,0));
+            Aug_Cholesky_Method(L_Aug, Phi.block<win,2>(j-win,0),Y.block<win,1>(j-win,0));
+            Aug_Cholesky_Method2(L_Aug, Phi.block<win,2>(j-win,0),Y.block<win,1>(j-win,0));
         }
         
         else{
             v(2,0)=Y(j);
             v(1,0)=j;
-            llt.rankUpdate( v, 1);    //update directly L matrix instread of re-computing L through A
+            llt.rankUpdate( v, 1);                        //update directly L matrix instread of re-computing L through A
             L_Aug=llt.matrixL(); 
-            Aug_Cholesky_Method(L_Aug,Phi.topLeftCorner(j, 2));
+            Aug_Cholesky_Method(L_Aug,Phi.topLeftCorner(j, 2),Y.topLeftCorner(j, 1));
+            Aug_Cholesky_Method2(L_Aug,Phi.topLeftCorner(j, 2),Y.topLeftCorner(j, 1));
         }
    }
 
