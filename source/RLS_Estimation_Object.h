@@ -112,7 +112,7 @@ namespace RLS {
 		const Type_Vec & getGains() const noexcept { return K; }
 		int getIterations() const noexcept { return num_update;  }
 		real_num getEstimatedOutput(Type_Vec& x) const noexcept { 
-			return x.dot(theta); } 						// x=Reg!, theta=new parameters
+			return x.dot(theta); } 						// x=time vector (t^0 t^1 .. t^n), theta=new parameters
 		real_num getCost() const noexcept { return cost; }
 		real_num getError() const noexcept { return error; }
         real_num getLambda() const noexcept { return lambda; }
@@ -135,7 +135,7 @@ namespace RLS {
     template <typename real_num>
     class BlockRLS: public RLS_Estimator<real_num> {
     public:
-        int window; // block size
+        int window; 									// block size
         typedef typename RLS_Estimator<real_num>::Type_Mat Type_Mat;
         typedef typename RLS_Estimator<real_num>::Type_Vec Type_Vec;
         Type_Mat pin;
@@ -162,19 +162,32 @@ namespace RLS {
                 pin(i, win - n + i) = 1. / sqrt(init);
 
 		}
-        void update_par(const Type_Vec& phi, real_num data) // what is phi? And why do I use it to update my matrix?
+        void update_par(const Type_Vec& phi, real_num data, int ADD) // what is phi? And why do I use it to update my matrix?
         {   
 			typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
 			
 			// shift elements 
-            for (int i=0; i<window; i++){
-                pin.col(i)=pin.col(i+1);
-            }
-            pin.col(window)=phi;						// add phi in the end of the matrix
-            for (int i=0; i<window; i++){
-			pout(i)=pout(i+1);
+
+			if (ADD<window){							// if the window is not filled
+				for (int i=0; i<ADD; i++){
+					pin.col(i)=pin.col(i+1);
+				}
+				for (int i=0; i<ADD; i++){
+					pout(i)=pout(i+1);
+				}
+				pout(ADD)=data;							// add data in the end of the matrix
+	            pin.col(ADD)=phi;						// add phi in the end of the matrix
 			}
-			pout(window)=data;							// add data in the end of the matrix
+			else{
+				for (int i=0; i<window; i++){
+					pin.col(i)=pin.col(i+1);
+				}
+				for (int i=0; i<window; i++){
+					pout(i)=pout(i+1);
+				}
+				pout(window)=data;						// add data in the end of the matrix
+			    pin.col(window)=phi;					// add phi in the end of the matrix
+			}
 			// end of shift 
 
             temp.setZero();
@@ -238,6 +251,81 @@ namespace RLS {
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    template <typename real_num>
+    class Augmented_Cholesky_RLS_Estimator: public RLS_Estimator<real_num> {
+    public:
+        int window; // block size
+		typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
+		typedef Matrix< real_num, Dynamic, 1 > Type_Vec;
+		LLT<Type_Mat> llt;
+        using RLS_Estimator<real_num>::np;
+        using RLS_Estimator<real_num>::init_covar;
+        using RLS_Estimator<real_num>::cost;		 	// Cost function
+        using RLS_Estimator<real_num>::error;		 	// Error value
+		using RLS_Estimator<real_num>::lambda;		 	// Forgetting Factor
+        using RLS_Estimator<real_num>::theta;		 	// Matrix of Parameters
+        using RLS_Estimator<real_num>::P_matrix;		// Covariance Matrix
+        using RLS_Estimator<real_num>::K;			 	// Gain Vector
+        using RLS_Estimator<real_num>::temp;
+        using RLS_Estimator<real_num>::num_update;	 	// Number of updates
+	public:
+        Augmented_Cholesky_RLS_Estimator(int n, int win, real_num init, int start, Type_Mat Phi, Type_Vec Y) // n: number of factors, 
+														// n: number of factors, init: Initial Covarience function
+        : RLS_Estimator<real_num>( n, 1, init), 	// why???
+			window(win)
+		{   
+            theta.setZero();
+			K.setZero();
+			P_matrix.setIdentity();
+			temp.setZero();
+			//setLambda(ff);
+			//setCovariance(init);
+			P_matrix = P_matrix * init;					// [init 0 ; 0 init]
+			
+			Type_Mat Phi_Aug(start,3);
+			Phi_Aug.setZero();
+			Phi_Aug.topRightCorner(start,1)=Y;
+			Phi_Aug.topLeftCorner(start,2)=Phi;
+			Type_Mat A_Aug=Phi_Aug.adjoint()*Phi_Aug;
+			llt.compute(A_Aug);
+			//L_Aug =llt.matrixL();
+		}
+
+        void update_par(Type_Vec v_up,Type_Vec v_down, int ADD )
+        {   
+			//typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
+			//Matrix <float , Dynamic, Dynamic > L2 = llt.matrixL();
+			llt.rankUpdate(v_up, 1);   
+			if(window<ADD){
+				llt.rankUpdate(v_down,-1);
+			}
+		    Type_Mat L_Aug =llt.matrixL();
+			theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
+		   	Matrix <float , Dynamic, Dynamic > L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+		    (L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
+
+
+
+		};
+
+		//Get Function
+        //const typename RLS_Estimator<real_num>::Type_Vec& getpout() const noexcept { return pout; }
+        //const typename RLS_Estimator<real_num>::Type_Mat& getpin() const noexcept { return pin; }
+        int getWindow() const { return window; }
+
+		//Reset Function
+		void reset() noexcept {/*
+            RLS_Estimator<real_num>::reset();
+            pin.setZero();
+            for (int i = 0; i < np; i++) {
+                pin(i, window - np + i) = 1./sqrt(init_covar);
+			}
+            pout.setZero();*/
+		};
+
+
+	};
+//-----------------------------------------------------------------------------------------------------------------------------------------
     //Subclass of RLS_Estimator that implemenets a polynomial estimation
 /* template <typename T, class Estimator>
     class PolyRLS : public Estimator
