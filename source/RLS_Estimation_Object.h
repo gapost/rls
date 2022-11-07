@@ -254,7 +254,9 @@ namespace RLS {
     template <typename real_num>
     class Augmented_Cholesky_RLS_Estimator: public RLS_Estimator<real_num> {
     public:
-        int window; // block size
+        int window;										// block size
+		int counter;
+		Type_Mat Phi_Aug;
 		typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
 		typedef Matrix< real_num, Dynamic, 1 > Type_Vec;
 		LLT<Type_Mat> llt;
@@ -269,40 +271,73 @@ namespace RLS {
         using RLS_Estimator<real_num>::temp;
         using RLS_Estimator<real_num>::num_update;	 	// Number of updates
 	public:
-        Augmented_Cholesky_RLS_Estimator(int n, int win, real_num init, int start, Type_Mat Phi, Type_Vec Y) // n: number of factors, 
+        Augmented_Cholesky_RLS_Estimator(int n, int win)
 														// n: number of factors, init: Initial Covarience function
-        : RLS_Estimator<real_num>( n, 1, init), 	// why???
+        : RLS_Estimator<real_num>( n, 1, init), 	
 			window(win)
 		{   
+			counter=0;
             theta.setZero();
-			K.setZero();
-			P_matrix.setIdentity();
-			temp.setZero();
-			//setLambda(ff);
-			//setCovariance(init);
-			P_matrix = P_matrix * init;					// [init 0 ; 0 init]
-			
-			Type_Mat Phi_Aug(start,3);
-			Phi_Aug.setZero();
-			Phi_Aug.topRightCorner(start,1)=Y;
-			Phi_Aug.topLeftCorner(start,2)=Phi;
-			Type_Mat A_Aug=Phi_Aug.adjoint()*Phi_Aug;
-			llt.compute(A_Aug);
-			//L_Aug =llt.matrixL();
+			//K.setZero();
+			//P_matrix.setIdentity();
+			//temp.setZero();
+			//P_matrix = P_matrix * init;					// [init 0 ; 0 init]
+			Phi_Aug.setZero(window,2);
+
 		}
 
-        void update_par(Type_Vec v_up,Type_Vec v_down, int ADD )
+        void update_par(Type_Mat Phi,Type_Vec Y )
         {   
-			//typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
-			//Matrix <float , Dynamic, Dynamic > L2 = llt.matrixL();
-			llt.rankUpdate(v_up, 1);   
-			if(window<ADD){
-				llt.rankUpdate(v_down,-1);
+			if (counter<n+1) {
+				Phi_Aug.topRightCorner(counter,1)=Y;
+				Phi_Aug.topLeftCorner(counter,2)=Phi;
 			}
-		    Type_Mat L_Aug =llt.matrixL();
-			theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-		   	Matrix <float , Dynamic, Dynamic > L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
-		    (L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
+			else if (counter==n+1) {
+				Phi_Aug.topRightCorner(counter,1)=Y;
+				Phi_Aug.topLeftCorner(counter,2)=Phi;
+				Type_Mat A_Aug=Phi_Aug.adjoint()*Phi_Aug;
+				llt.compute(A_Aug);
+				
+				Type_Mat L_Aug =llt.matrixL();
+				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
+				Matrix <float , Dynamic, Dynamic > L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
+
+			}
+			else if (counter < window) {
+				Phi_Aug.topRightCorner(counter,1)=Y;
+				Phi_Aug.topLeftCorner(counter,2)=Phi;
+				v_up.topLeftCorner(1,2)=Phi;
+				v_up.topRightCorner(1,1)=Y;
+				llt.rankUpdate(v_up, 1); 
+
+				L_Aug =llt.matrixL();
+				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
+				Matrix <float , Dynamic, Dynamic > L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
+ 
+			}
+			 
+			else {
+				v_up.topLeftCorner(1,2)=Phi;
+				v_up.topRightCorner(1,1)=Y;
+				v_down=Phi_Aug.topLeftCorner(1,3);
+				llt.rankUpdate(v_up,+1); 
+				llt.rankUpdate(v_down,-1); 
+
+				//update Phi_Aug
+				for (int i=0; i<window-1; i++){
+					Phi_Aug.row(i)=Phi_Aug.row(i+1)
+				}
+				Phi_Aug.topRightCorner(window,1)=Y;
+				Phi_Aug.topLeftCorner(window,2)=Phi;
+
+				L_Aug =llt.matrixL();
+				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
+				Matrix <float , Dynamic, Dynamic > L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
+			}
+		    
 
 
 
@@ -314,13 +349,14 @@ namespace RLS {
         int getWindow() const { return window; }
 
 		//Reset Function
-		void reset() noexcept {/*
-            RLS_Estimator<real_num>::reset();
-            pin.setZero();
-            for (int i = 0; i < np; i++) {
-                pin(i, window - np + i) = 1./sqrt(init_covar);
-			}
-            pout.setZero();*/
+		void reset() noexcept {
+			counter=0;
+            theta.setZero();
+			//K.setZero();
+			//P_matrix.setIdentity();
+			//temp.setZero();
+			//P_matrix = P_matrix * init;					// [init 0 ; 0 init]
+			Phi_Aug.setZero(window,2);
 		};
 
 

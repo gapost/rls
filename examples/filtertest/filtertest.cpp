@@ -76,7 +76,7 @@ void Aug_Cholesky_Method(int win, real_num init_covar, Vec Y, int start, int l )
     v_up(0,0)=1;   
 	v_down(0,0)=1;
 
-	Augmented_Cholesky_RLS_Estimator<real_num> Test_Block (2 , win, init_covar, start, Phi, Y.topLeftCorner(start, 1));
+	Augmented_Cholesky_RLS_Estimator<real_num> Test_Block (2 , win);
 
     // Update Cholesky matrix and compute Theta again
     for(int j=1; j<l; j++){ 
@@ -92,7 +92,7 @@ void Aug_Cholesky_Method(int win, real_num init_covar, Vec Y, int start, int l )
             v_up(2,0)=Y(j);
         }
 		//cout<<v_up.topLeftCorner(2, 1)<<"\n\n\n";
-   		Test_Block.update_par(v_up, v_down, j );
+   		Test_Block.update_par(Phi(j,2), Y(j) );
 		Vec v=v_up.topLeftCorner(2, 1);
 		out << Test_Block.getEstimatedOutput(v)<<'\t' << (Test_Block.getEstimatedParameters()(0)) << "\t" << (Test_Block.getEstimatedParameters()(1)) << endl;	
 	}
