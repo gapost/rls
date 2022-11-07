@@ -64,33 +64,13 @@ void Aug_Cholesky_Method(int win, real_num init_covar, Vec Y, int start, int l )
 	ofstream out;
 	out.open ("aug_chol.txt");
 
-	Mat Phi(start,2);
-	for (int i =0; i<start; i++){
-		Phi(i,0)=1;
-		Phi(i,1)=i;
-	}
-    
-	// Matrix used to update llt
-    Vec v_up=Vec::Zero(3,1);
-	Vec v_down=Vec::Zero(3,1);
-    v_up(0,0)=1;   
-	v_down(0,0)=1;
-
 	Augmented_Cholesky_RLS_Estimator<real_num> Test_Block (2 , win);
+	Vec RegW=Vec::Identity(2,1);
 
     // Update Cholesky matrix and compute Theta again
     for(int j=1; j<l; j++){ 
-        if(j>win){
-            v_up(1,0)=j;
-            v_up(2,0)=Y(j);
-            v_down(1,0)=j-win;
-            v_down(2,0)=Y(j-win);
-			
-        }
-        else{
-            v_up(1,0)=j;
-            v_up(2,0)=Y(j);
-        }
+		RegW(0)=pow(j,0);
+		RegW(1)=pow(j,1);
 		//cout<<v_up.topLeftCorner(2, 1)<<"\n\n\n";
    		Test_Block.update_par(Phi(j,2), Y(j) );
 		Vec v=v_up.topLeftCorner(2, 1);
