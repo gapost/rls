@@ -254,11 +254,13 @@ namespace RLS {
     template <typename real_num>
     class Augmented_Cholesky_RLS_Estimator: public RLS_Estimator<real_num> {
     public:
-        int window;										// block size
-		int counter;
-		Type_Mat Phi_Aug;
+
 		typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
 		typedef Matrix< real_num, Dynamic, 1 > Type_Vec;
+		int window;										// block size
+		int counter;
+		int N;
+		Type_Mat Phi_Aug;
 		LLT<Type_Mat> llt;
         using RLS_Estimator<real_num>::np;
         using RLS_Estimator<real_num>::init_covar;
@@ -273,8 +275,9 @@ namespace RLS {
 	public:
         Augmented_Cholesky_RLS_Estimator(int n, int win)
 														// n: number of factors, init: Initial Covarience function
-        : RLS_Estimator<real_num>( n, 1, init), 	
-			window(win)
+        : RLS_Estimator<real_num>( n, 1, 1), 	
+			window(win),
+			N(n)
 		{   
 			counter=0;
             theta.setZero();
@@ -282,65 +285,76 @@ namespace RLS {
 			//P_matrix.setIdentity();
 			//temp.setZero();
 			//P_matrix = P_matrix * init;					// [init 0 ; 0 init]
-			Phi_Aug.setZero(window,2);
+			Phi_Aug.setZero(window,3);
 
 		}
 
-        void update_par(Type_Mat Phi,Type_Vec Y )
+        void update_par( real_num Y )
         {   
-			if (counter<n+1) {
-				Phi_Aug.topRightCorner(counter,1)=Y;
-				Phi_Aug.topLeftCorner(counter,2)=Phi;
+			Matrix <float , Dynamic, Dynamic > L;
+			L.setZero(2,2);
+			Type_Vec YY=Type_Vec::Zero(window);
+			Type_Mat v_up=Type_Mat::Zero(3,1);
+			Type_Mat v_down=Type_Mat::Zero(3,1);
+			Type_Mat L_Aug=Type_Mat::Zero(3,3);
+			v_up(0,0)=1;
+			v_down(0,0)=1;
+			if (counter<N+1) {
+				YY(counter)=Y;
+				Phi_Aug(counter,0)=pow(counter,0);
+				Phi_Aug(counter,1)=pow(counter,1);
+				Phi_Aug(counter,2)=Y;
 			}
-			else if (counter==n+1) {
-				Phi_Aug.topRightCorner(counter,1)=Y;
-				Phi_Aug.topLeftCorner(counter,2)=Phi;
+			else if (counter==N+1) {
+				YY(counter)=Y;
+				Phi_Aug(counter,0)=pow(counter,0);
+				Phi_Aug(counter,1)=pow(counter,1);
+				Phi_Aug(counter,2)=Y;
 				Type_Mat A_Aug=Phi_Aug.adjoint()*Phi_Aug;
 				llt.compute(A_Aug);
-				
-				Type_Mat L_Aug =llt.matrixL();
+				L_Aug =llt.matrixL();
 				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-				Matrix <float , Dynamic, Dynamic > L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+				L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
 				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
 
 			}
-			else if (counter < window) {
-				Phi_Aug.topRightCorner(counter,1)=Y;
-				Phi_Aug.topLeftCorner(counter,2)=Phi;
-				v_up.topLeftCorner(1,2)=Phi;
-				v_up.topRightCorner(1,1)=Y;
-				llt.rankUpdate(v_up, 1); 
+			else if ( counter < window) {
+				cout<<"2"<<endl;
+
+				YY(counter)=Y;
+				v_up(1,0)=pow(counter,1);
+		     	v_up(2,0)=Y;
+				//llt.rankUpdate(v_up, 1); 
 
 				L_Aug =llt.matrixL();
 				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-				Matrix <float , Dynamic, Dynamic > L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+				 L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
 				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
- 
 			}
-			 
+			
 			else {
-				v_up.topLeftCorner(1,2)=Phi;
-				v_up.topRightCorner(1,1)=Y;
-				v_down=Phi_Aug.topLeftCorner(1,3);
-				llt.rankUpdate(v_up,+1); 
-				llt.rankUpdate(v_down,-1); 
-
-				//update Phi_Aug
+				v_up(1,0)=counter;
+		     	v_up(2,0)=Y;
+				v_down(1,0)=counter-window;
+		     	v_down(2,0)=YY(0);
+				//llt.rankUpdate(v_up,+1); 
+				//llt.rankUpdate(v_down,-1); 
+				//update YYg
 				for (int i=0; i<window-1; i++){
-					Phi_Aug.row(i)=Phi_Aug.row(i+1)
+					YY(i)=YY(i+1);
 				}
-				Phi_Aug.topRightCorner(window,1)=Y;
-				Phi_Aug.topLeftCorner(window,2)=Phi;
+
+				YY(window-1)=Y;
 
 				L_Aug =llt.matrixL();
 				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-				Matrix <float , Dynamic, Dynamic > L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+				L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
 				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
 			}
 		    
 
-
-
+		cout<<"counter="<<counter<<"\n";
+		counter+=1;
 		};
 
 		//Get Function
