@@ -66,21 +66,18 @@ void Aug_Cholesky_Method(int win, real_num init_covar, Vec Y, int start, int l )
 
 	Augmented_Cholesky_RLS_Estimator<real_num> Test_Block (2 , win);
 	Vec RegW=Vec::Identity(2,1);
-
     // Update Cholesky matrix and compute Theta again
     for(int j=1; j<l; j++){ 
 		RegW(0)=pow(j,0);
 		RegW(1)=pow(j,1);
 		//cout<<v_up.topLeftCorner(2, 1)<<"\n\n\n";
-   		Test_Block.update_par(Phi(j,2), Y(j) );
-		Vec v=v_up.topLeftCorner(2, 1);
-		out << Test_Block.getEstimatedOutput(v)<<'\t' << (Test_Block.getEstimatedParameters()(0)) << "\t" << (Test_Block.getEstimatedParameters()(1)) << endl;	
+   		Test_Block.update_par( Y[j] );
+		out << Test_Block.getEstimatedOutput(RegW)<<'\t' << (Test_Block.getEstimatedParameters()(0)) << "\t" << (Test_Block.getEstimatedParameters()(1)) << endl;	
 	}
    	out.close();
 }
 
 int main() {
-
 	system("rm FF.txt");
 	system("rm Signal.txt");
 	system("rm RecWin.txt");
@@ -92,8 +89,8 @@ int main() {
 	real_num ff = 0.97; 
 	int window_size =80;
 
-	int   l=2500, m=1500, n=800;
-    float l1=3.8, l2=6.3, l3=3.4;
+	int   l=3500,p=2000, m=1500, n=800;
+    float l1=3.8, l2=6.3, l3=3.4, l4=4;
 	len=l;
 	//Initializing random signal
 	Vec Y1=Vec::Zero(len); 
@@ -117,12 +114,16 @@ int main() {
         Y2[i]= l2 + dis(gen);
 		SignalFile<<Y1[i]<<'\n';
 	}
-	for (int i = m; i < l; i++) {
+	for (int i = m; i < p; i++) {
         Y1[i]= l3 + dis(gen);
         Y2[i]= l3 + dis(gen);
 		SignalFile<<Y1[i]<<'\n';
 	}
-
+	for (int i = p; i < l; i++) {
+        Y1[i]= l4 + dis(gen);
+        Y2[i]= l4 + dis(gen);
+		SignalFile<<Y1[i]<<'\n';
+	}
 
 	SignalFile.close();
 	//const float *Signal_Y=Y;

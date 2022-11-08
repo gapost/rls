@@ -261,6 +261,7 @@ namespace RLS {
 		int counter;
 		int N;
 		Type_Mat Phi_Aug;
+		Type_Vec YY;
 		LLT<Type_Mat> llt;
         using RLS_Estimator<real_num>::np;
         using RLS_Estimator<real_num>::init_covar;
@@ -286,31 +287,42 @@ namespace RLS {
 			//temp.setZero();
 			//P_matrix = P_matrix * init;					// [init 0 ; 0 init]
 			Phi_Aug.setZero(window,3);
+			YY.setZero(window);
 
 		}
 
         void update_par( real_num Y )
         {   
 			Matrix <float , Dynamic, Dynamic > L;
+
+			Type_Mat v_up=Type_Mat::Zero(N+1,1);
+			Type_Mat v_down=Type_Mat::Zero(N+1,1);
+			Type_Mat L_Aug=Type_Mat::Zero(N+1,N+1);
+			Type_Mat A_Aug=Type_Mat::Zero(window,3);
+
 			L.setZero(2,2);
-			Type_Vec YY=Type_Vec::Zero(window);
-			Type_Mat v_up=Type_Mat::Zero(3,1);
-			Type_Mat v_down=Type_Mat::Zero(3,1);
-			Type_Mat L_Aug=Type_Mat::Zero(3,3);
 			v_up(0,0)=1;
 			v_down(0,0)=1;
+
 			if (counter<N+1) {
 				YY(counter)=Y;
-				Phi_Aug(counter,0)=pow(counter,0);
-				Phi_Aug(counter,1)=pow(counter,1);
-				Phi_Aug(counter,2)=Y;
+				//cout<<"counter="<<counter<<Y<<"\n\n";;
+
+				for (int i=0; i<N; i++){
+					Phi_Aug(counter,i)=pow(counter+1,i);
+					cout<<"counter="<<counter<<"	"<<Phi_Aug(counter,i)<<endl;
+					}
+				Phi_Aug(counter,N)=Y;
+			
 			}
 			else if (counter==N+1) {
 				YY(counter)=Y;
-				Phi_Aug(counter,0)=pow(counter,0);
-				Phi_Aug(counter,1)=pow(counter,1);
-				Phi_Aug(counter,2)=Y;
-				Type_Mat A_Aug=Phi_Aug.adjoint()*Phi_Aug;
+
+				for (int i=0; i<N; i++){
+					Phi_Aug(counter,i)=pow(counter+1,i);}
+				Phi_Aug(counter,N)=Y;
+
+				A_Aug=Phi_Aug.adjoint()*Phi_Aug;
 				llt.compute(A_Aug);
 				L_Aug =llt.matrixL();
 				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
@@ -319,44 +331,50 @@ namespace RLS {
 
 			}
 			else if ( counter < window) {
-				cout<<"2"<<endl;
-
 				YY(counter)=Y;
-				v_up(1,0)=pow(counter,1);
+				v_up(1,0)=pow(counter+1,1);
 		     	v_up(2,0)=Y;
-				//llt.rankUpdate(v_up, 1); 
-
+				llt=update_llt(llt, v_up); 
 				L_Aug =llt.matrixL();
+				
+				if(counter==window-1){
+					//cout<<counter<<"\n"<<v_up<<"\n\n";
+				}
+
 				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
 				 L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
 				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
+
 			}
 			
 			else {
 				v_up(1,0)=counter;
 		     	v_up(2,0)=Y;
-				v_down(1,0)=counter-window;
-		     	v_down(2,0)=YY(0);
-				//llt.rankUpdate(v_up,+1); 
-				//llt.rankUpdate(v_down,-1); 
-				//update YYg
+				v_down(1,0)=counter-window+1;
+		     	v_down(2,0)=YY(1);
+				llt=up_down_date_llt(llt, v_up, v_down); 
+				
 				for (int i=0; i<window-1; i++){
 					YY(i)=YY(i+1);
 				}
-
 				YY(window-1)=Y;
+				//cout<<"counter="<<counter<<"\n\n"<<v_down<<"\n\n\n";
 
 				L_Aug =llt.matrixL();
 				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
 				L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
-				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
+				(L.adjoint()).triangularView<Eigen::Upper>().solveInPlace(theta); 
 			}
 		    
 
-		cout<<"counter="<<counter<<"\n";
 		counter+=1;
 		};
-
+		LLT<Type_Mat> update_llt(LLT<Type_Mat> llt, const Type_Vec v ){ llt.rankUpdate(v, 1); return llt; }
+		LLT<Type_Mat> up_down_date_llt(LLT<Type_Mat> llt, const Type_Vec& v_up, const Type_Vec& v_down ){ 
+			llt.rankUpdate(v_up, +1); 
+			llt.rankUpdate(v_down, -1);
+ 
+			return llt; }
 		//Get Function
         //const typename RLS_Estimator<real_num>::Type_Vec& getpout() const noexcept { return pout; }
         //const typename RLS_Estimator<real_num>::Type_Mat& getpin() const noexcept { return pin; }
@@ -370,7 +388,7 @@ namespace RLS {
 			//P_matrix.setIdentity();
 			//temp.setZero();
 			//P_matrix = P_matrix * init;					// [init 0 ; 0 init]
-			Phi_Aug.setZero(window,2);
+			Phi_Aug.setZero(window,N);
 		};
 
 
