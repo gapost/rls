@@ -44,6 +44,7 @@ ylabel("sample's value")
 legend("Random Signal", "Estimated Signal")
 ylim([0,10])
 hold on;
+
 xlim([0,length(n)])
 
 % Augmented Cholescy Aproch - load data

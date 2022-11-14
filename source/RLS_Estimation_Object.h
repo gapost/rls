@@ -381,6 +381,7 @@ namespace RLS {
         //const typename RLS_Estimator<real_num>::Type_Mat& getpin() const noexcept { return pin; }
         int getWindow() const { return window; }
 
+
 		//Reset Function
 			void reset() noexcept {
 			counter=0;
