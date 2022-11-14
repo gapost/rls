@@ -30,8 +30,7 @@ void Forgeting_Factor_Method(const real_num* Y, real_num ff, int len , real_num 
     out.open ("FF.txt");
 
 	for (int i = 0; i < len; i++) {
-		RegF(0)=pow(i,0);
-		RegF(1)=pow(i,1);
+		RegF(1)=i;
         Test_Gen.update_par(RegF,Y[i]); // Update parameters in respect to Input and Output
 		out << Test_Gen.getEstimatedOutput(RegF)<<'\t' << (Test_Gen.getEstimatedParameters()(0)) << "\t" << (Test_Gen.getEstimatedParameters()(1)) << endl;	
 		}
@@ -50,8 +49,7 @@ void Rec_Window_Method(const real_num* Y, int len,real_num ff, int win ,real_num
 
     for (int i = 0; i < len; i++) { //for each sample i
 		//update polinomial factors
-		RegW(0)=pow(i,0);
-		RegW(1)=pow(i,1);
+		RegW(1)=i;
 		Test_Block.update_par(RegW,Y[i],i); 
 		out <<Test_Block.getEstimatedOutput(RegW)<<'\t' << (Test_Block.getEstimatedParameters()(0)) << "\t" << (Test_Block.getEstimatedParameters()(1)) << endl;	
 
@@ -64,15 +62,13 @@ void Aug_Cholesky_Method(int win, real_num init_covar, Vec Y, int start, int l )
 	ofstream out;
 	out.open ("aug_chol.txt");
 
-	Augmented_Cholesky_RLS_Estimator<real_num> Test_Block (2 , win);
+	Augmented_Cholesky_RLS_Estimator<real_num> Test_AugChol (2 , win);
 	Vec RegW=Vec::Identity(2,1);
     // Update Cholesky matrix and compute Theta again
     for(int j=1; j<l; j++){ 
-		RegW(0)=pow(j,0);
-		RegW(1)=pow(j,1);
-		//cout<<v_up.topLeftCorner(2, 1)<<"\n\n\n";
-   		Test_Block.update_par( Y[j] );
-		out << Test_Block.getEstimatedOutput(RegW)<<'\t' << (Test_Block.getEstimatedParameters()(0)) << "\t" << (Test_Block.getEstimatedParameters()(1)) << endl;	
+		RegW(1)=j;
+   		Test_AugChol.update_par(RegW, Y[j] );
+		out << Test_AugChol.getEstimatedOutput(RegW)<<'\t' << (Test_AugChol.getEstimatedParameters()(0)) << "\t" << (Test_AugChol.getEstimatedParameters()(1)) << endl;	
 	}
    	out.close();
 }
@@ -87,10 +83,10 @@ int main() {
 	int len = 1000; //Length of Array of Output/Input-Iteration function
 	real_num init_covar = 80;
 	real_num ff = 0.97; 
-	int window_size =80;
+	int window_size =50;
 
 	int   l=3500,p=2000, m=1500, n=800;
-    float l1=3.8, l2=6.3, l3=3.4, l4=4;
+    float l1=0.8, l2=6.3, l3=3.4, l4=4;
 	len=l;
 	//Initializing random signal
 	Vec Y1=Vec::Zero(len); 

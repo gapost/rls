@@ -261,7 +261,16 @@ namespace RLS {
 		int counter;
 		int N;
 		Type_Mat Phi_Aug;
-		Type_Vec YY;
+		//Type_Vec YY;
+		Matrix <float , Dynamic, Dynamic > L;
+
+		Type_Mat v_up;
+		Type_Mat v_down;
+		Type_Mat L_Aug;
+		Type_Mat A_Aug;
+		//Type_Mat phi_save;
+		//Matrix <float , Dynamic, Dynamic > L;
+
 		LLT<Type_Mat> llt;
         using RLS_Estimator<real_num>::np;
         using RLS_Estimator<real_num>::init_covar;
@@ -278,119 +287,121 @@ namespace RLS {
 														// n: number of factors, init: Initial Covarience function
         : RLS_Estimator<real_num>( n, 1, 1), 	
 			window(win),
-			N(n)
+			N(n),
+			v_up(N+1,1),
+			v_down(N+1,1),
+			L_Aug(N+1,N+1),
+			A_Aug(window,N+1),
+			Phi_Aug(window,N+1)
 		{   
-			counter=0;
-            theta.setZero();
-			//K.setZero();
-			//P_matrix.setIdentity();
-			//temp.setZero();
-			//P_matrix = P_matrix * init;					// [init 0 ; 0 init]
-			Phi_Aug.setZero(window,3);
-			YY.setZero(window);
-
+			reset();
 		}
 
-        void update_par( real_num Y )
+        void update_par( Type_Vec phi, real_num Y )
         {   
-			Matrix <float , Dynamic, Dynamic > L;
-
-			Type_Mat v_up=Type_Mat::Zero(N+1,1);
-			Type_Mat v_down=Type_Mat::Zero(N+1,1);
-			Type_Mat L_Aug=Type_Mat::Zero(N+1,N+1);
-			Type_Mat A_Aug=Type_Mat::Zero(window,3);
-
-			L.setZero(2,2);
-			v_up(0,0)=1;
-			v_down(0,0)=1;
-
-			if (counter<N+1) {
-				YY(counter)=Y;
-				//cout<<"counter="<<counter<<Y<<"\n\n";;
-
+			if (counter < N+1) {
 				for (int i=0; i<N; i++){
-					Phi_Aug(counter,i)=pow(counter+1,i);
-					cout<<"counter="<<counter<<"	"<<Phi_Aug(counter,i)<<endl;
+					Phi_Aug(counter,i)=phi(i);
 					}
 				Phi_Aug(counter,N)=Y;
-			
 			}
-			else if (counter==N+1) {
-				YY(counter)=Y;
-
+			else if (counter == N+1) {
 				for (int i=0; i<N; i++){
-					Phi_Aug(counter,i)=pow(counter+1,i);}
+					Phi_Aug(counter,i)=phi(i);
+				}
 				Phi_Aug(counter,N)=Y;
 
 				A_Aug=Phi_Aug.adjoint()*Phi_Aug;
 				llt.compute(A_Aug);
 				L_Aug =llt.matrixL();
 				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-				L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+				L=(L_Aug.topLeftCorner(2,2)); 			//gives error if I initialize it with Type_Mat or real_num
 				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
 
 			}
 			else if ( counter < window) {
-				YY(counter)=Y;
-				v_up(1,0)=pow(counter+1,1);
-		     	v_up(2,0)=Y;
+
+				for (int i=0; i<N; i++){
+					Phi_Aug(counter,i)=phi(i);
+				}
+				Phi_Aug(counter,N)=Y;
+
+				for (int i=0; i<N; i++){
+					v_up(i,0)=phi(i);
+				}
+				v_up(N,0)=Y;
 				llt=update_llt(llt, v_up); 
 				L_Aug =llt.matrixL();
 				
-				if(counter==window-1){
-					//cout<<counter<<"\n"<<v_up<<"\n\n";
-				}
-
 				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-				 L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+				L=(L_Aug.topLeftCorner(2,2)); 			//gives error if I initialize it with Type_Mat or real_num
 				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
-
 			}
-			
 			else {
-				v_up(1,0)=counter;
-		     	v_up(2,0)=Y;
-				v_down(1,0)=counter-window+1;
-		     	v_down(2,0)=YY(1);
+				
+				for (int i=0; i<N; i++){
+					v_up(i,0)=phi(i);
+				}
+				v_up(N,0)=Y;
+
+				for (int i =0; i<N; i++){
+					v_down(i,0)=Phi_Aug(0,i);
+		     	}
+				v_down(N,0)=Phi_Aug(0,N);
+
 				llt=up_down_date_llt(llt, v_up, v_down); 
 				
 				for (int i=0; i<window-1; i++){
-					YY(i)=YY(i+1);
+					Phi_Aug.row(i)=Phi_Aug.row(i+1);
 				}
-				YY(window-1)=Y;
-				//cout<<"counter="<<counter<<"\n\n"<<v_down<<"\n\n\n";
+				for (int i=0; i<N; i++){
+					Phi_Aug(window-1,i)=phi(i);
+				}
+				Phi_Aug(window-1,N)=Y;
 
 				L_Aug =llt.matrixL();
 				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-				L=(L_Aug.topLeftCorner(2,2)); //gives error if I initialize it with Type_Mat or real_num
+				L=(L_Aug.topLeftCorner(2,2)); 			//gives error if I initialize it with Type_Mat or real_num
 				(L.adjoint()).triangularView<Eigen::Upper>().solveInPlace(theta); 
-			}
-		    
 
+			}
 		counter+=1;
 		};
 		LLT<Type_Mat> update_llt(LLT<Type_Mat> llt, const Type_Vec v ){ llt.rankUpdate(v, 1); return llt; }
 		LLT<Type_Mat> up_down_date_llt(LLT<Type_Mat> llt, const Type_Vec& v_up, const Type_Vec& v_down ){ 
 			llt.rankUpdate(v_up, +1); 
 			llt.rankUpdate(v_down, -1);
- 
 			return llt; }
+
+
+
+
 		//Get Function
         //const typename RLS_Estimator<real_num>::Type_Vec& getpout() const noexcept { return pout; }
         //const typename RLS_Estimator<real_num>::Type_Mat& getpin() const noexcept { return pin; }
         int getWindow() const { return window; }
 
 		//Reset Function
-		void reset() noexcept {
+			void reset() noexcept {
 			counter=0;
             theta.setZero();
 			//K.setZero();
 			//P_matrix.setIdentity();
 			//temp.setZero();
-			//P_matrix = P_matrix * init;					// [init 0 ; 0 init]
-			Phi_Aug.setZero(window,N);
-		};
+			//P_matrix = P_matrix * init;				// [init 0 ; 0 init]
+			Phi_Aug.setZero();
+			v_up.setZero();
+			v_down.setZero();
+			L_Aug.setZero();
+			A_Aug.setZero();
+			//phi_save.setZero(window,N);
+			L.setZero(2,2);
+			v_up(0,0)=1;
+			v_down(0,0)=1;
+			//YY.setZero(window);
 
+
+		};
 
 	};
 //-----------------------------------------------------------------------------------------------------------------------------------------

@@ -1,15 +1,15 @@
 clear
-##cd build
+
 Signal = dlmread('build/Signal.txt');
 n=linspace(0,length(Signal)-1,length(Signal));
 
 % Load Data:
 % FF.txt includes -1st colum- Estimated Signal - 2nd colum a0 -3rd colum a1
 ##FF=dlmread('/home/vd/intership_mat/Intership/rls/examples/filtertest/build/FF.txt');
-FF=dlmread('/home/vd/rls/examples/filtertest/build/FF.txt');
+FF=dlmread('build/FF.txt');
 ##RecWin.txt includes -1st colum- Estimated Signal - 2nd colum a0 -3rd colum a1
-RecWin=dlmread('/home/vd/rls/examples/filtertest/build/RecWin.txt');
-AugChol=dlmread('/home/vd/rls/examples/filtertest/build/aug_chol.txt');
+RecWin=dlmread('build/RecWin.txt');
+AugChol=dlmread('build/aug_chol.txt');
 
 % Simple RLS
 
@@ -24,7 +24,7 @@ xlabel("number of sample")
 ylabel("sample's value")
 legend("Random Signal", "Estimated Signal")
 hold on;grid on;
-ylim([0,max(RecWin(:,1))+1])
+ylim([0,10])
 xlim([0,length(n)])
 
 % Rectagular Window Aproch - load data
@@ -38,11 +38,11 @@ hold on;
 grid on;
 ##plot(n,5*ones(1,length(n)),'k')
 grid on;
-title("Rectangular Window Approach, Window=80 samples")
+title("Rectangular Window Approach, Window=50 samples")
 xlabel("number of sample")
 ylabel("sample's value")
 legend("Random Signal", "Estimated Signal")
-ylim([0,max(RecWin(:,1))+1])
+ylim([0,10])
 hold on;
 xlim([0,length(n)])
 
@@ -57,11 +57,11 @@ hold on;
 grid on;
 ##plot(n,5*ones(1,length(n)),'k')
 grid on;
-title("Augmented Cholescy Aproch, Window=80 samples")
+title("Augmented Cholescy Aproch, Window=50 samples")
 xlabel("number of sample")
 ylabel("sample's value")
 legend("Random Signal", "Estimated Signal")
-ylim([0,max(AugChol(:,1))+1])
+ylim([0,10])
 hold on;
 xlim([0,length(n)])
 ##
@@ -74,7 +74,7 @@ title("Polinomial Coeficients, forgeting factor=0.97")
 grid on;
 xlabel("number of sample")
 legend("a0", "a1")
-ylim([min(RecWin(:,2))-2,max(RecWin(:,2))+2])
+ylim([min(AugChol(5:end,2))-2,max(AugChol(5:end,2))+2])
 xlim([0,length(n)])
 
 
@@ -84,11 +84,11 @@ plot(RecWin(:,2))
 hold on
 plot(RecWin(:,3))
 hold on
-title("Polinomial Coeficients, Window=80 samples")
+title("Polinomial Coeficients, Window=50 samples")
 grid on;
 xlabel("number of sample")
 legend("a0", "a1")
-ylim([min(RecWin(:,2))-2,max(RecWin(:,2))+2])
+ylim([min(AugChol(5:end,2))-2,max(AugChol(5:end,2))+2])
 xlim([0,length(n)])
 
 ##
@@ -97,9 +97,9 @@ plot(AugChol(:,2))
 hold on
 plot(AugChol(:,3))
 hold on
-title("Polinomial Coeficients, Window=80 samples")
+title("Polinomial Coeficients, Window=50 samples")
 grid on;
 xlabel("number of sample")
 legend("a0", "a1")
-ylim([min(AugChol(:,2))-2,max(AugChol(:,2))+2])
+ylim([min(AugChol(5:end,2))-2,max(AugChol(5:end,2))+2])
 xlim([0,length(n)])
