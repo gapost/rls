@@ -1,9 +1,9 @@
 #include <iostream>
 #include <string>
-#include "RLS_Estimation_Object.h"
+#include "RLS.h"
 
 using namespace std;
-using namespace arma;
+using namespace Eigen;
 
 template<class _RLS>
 int do_filter(_RLS& rls)
@@ -15,9 +15,11 @@ int do_filter(_RLS& rls)
         cin >> data;
         if (!cin.good()) return -1;
         i++;
-        rls.update_par(data);
-        cout << rls.getEstimatedOutput();
-        const vec& w = rls.getEstimatedParameters();
+        rls.update(data);
+        cout << rls.estimatedOutput();
+        cout << '\t' << rls.estimatedRate();
+        cout << '\t' << rls.cost();         
+        const typename _RLS::VectorType & w = rls.estimatedPar();
         int np = w.size();
         for(int j=0; j<np; j++) cout << '\t' << w(j);
         cout << endl;
@@ -30,6 +32,7 @@ int main(int argn, char** argv)
     int Np = 2; // poly order
     double ff = 0.98; // forgetting factor
     int M = 0; // block width
+    bool llt = false;
 
     const char* usage =
         "Usage:\n"
@@ -37,7 +40,8 @@ int main(int argn, char** argv)
         "Options:\n"
         "  -nX  : fitting polynomial order, X=1,2,3,... (default = 2) \n"
         "  -ffX : forgetting factor, 0<X<=1, (default = 0.98) \n"
-        "  -wX  : block width, X=0 means no block (default)\n\n"
+        "  -wX  : block width, X=0 means no block (default)\n"
+        "  -llt : block RLS with cholesky LLT decomposition\n\n"
         "rlstst takes input from stdin and writes to stdout. Use redirection for\n"
         "file input/output, e.g.:\n"
         "  rlstst < in.dat > out.dat\n";
@@ -57,6 +61,9 @@ int main(int argn, char** argv)
             opt.erase(0,2);
             M = atoi(opt.c_str());
         }
+        else if (opt.find("-llt")==0) { // use cholesky
+            llt = true;
+        }
         else if (opt.find("-h")==0) { // block width
             cout << usage;
             return 0;
@@ -69,12 +76,26 @@ int main(int argn, char** argv)
     }
 
     if (M>0) {
-        RLS::PolyRLS<double, RLS::BlockRLS<double> > rls(Np, ff, M, 1.);
-        return do_filter(rls);
+        if (llt) {
+            RLS::PolyRLS< RLS::CholeskyBlockRls<double> > rls(Np);
+            rls.setSize(M);
+            return do_filter(rls);
+        } else {
+            RLS::PolyRLS< RLS::BlockRLS<double> > rls(Np);
+            rls.setSize(M);
+            return do_filter(rls);
+        }
     }
     else {
-        RLS::PolyRLS<double, RLS::RLS_Estimator<double> > rls(Np, ff, 1.);
-        return do_filter(rls);
+        if (llt) {
+            RLS::PolyRLS< RLS::ExpWeightedRLS2<double> > rls(Np);
+            rls.setff(ff);
+            return do_filter(rls);
+        } else {
+            RLS::PolyRLS< RLS::ExpWeightedRLS<double> > rls(Np);
+            rls.setff(ff);
+            return do_filter(rls);            
+        }
     }
 
     return 0;
