@@ -1,16 +1,10 @@
-cmake_minimum_required(VERSION 3.5)
 
-project(rlstst LANGUAGES CXX)
-
-find_package(Armadillo REQUIRED)
-include_directories(${ARMADILLO_INCLUDE_DIRS})
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(Eigen3 3.3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 include_directories(../source)
 
-add_executable(rlsfilter rlsfilter.cpp)
+add_executable(rlsfilter rlsfilter.cpp ../source/RLS.h)
 
-target_link_libraries(rlsfilter ${ARMADILLO_LIBRARIES})
+target_link_libraries(rlsfilter Eigen3::Eigen)
 
