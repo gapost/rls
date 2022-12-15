@@ -1,485 +1,592 @@
 #ifndef RLS_Estimation
 #define RLS_Estimation
 
-//Directories//
+// Directories//
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <stdexcept>
 #include <Eigen/Dense>
 
-using namespace std;
-using namespace Eigen;
-
-
-namespace RLS {
-
-    template <typename real_num>
-	class RLS_Estimator {
+namespace RLS
+{
+	/**
+	 * @brief Base class for RLS estimators
+	 * 
+	 * @tparam T Real number type (float, double, long double)
+	 */
+	template < typename T >
+	class RlsEstimatorBase
+	{
 	public:
-		static_assert(std::is_arithmetic_v<real_num>,"The estimator doesn't support string inputs.");
-		typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
-		typedef Matrix< real_num, Dynamic, 1 > Type_Vec;
+		typedef T ScalarType;
+		typedef typename Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> MatrixType;
+		typedef typename Eigen::Matrix<T, Eigen::Dynamic, 1> VectorType;
 
 	protected:
-		int np; 										// Number of Parameters - Order of Polynomial
-		real_num lambda; 								// Forgetting Factor
-		real_num init_covar; 							// Initial Covariance (Preferably large to declare indiffirence at first iterations//
-		real_num cost; 									// Cost function 
-		real_num error; 								// Error value
-		Type_Vec theta; 								// Matrix of Parameters//
-		Type_Mat P_matrix;								// Covariance Matrix//
-		Type_Vec K; 									// Gain Vector//
-        Type_Vec temp; 									// temporary
-		unsigned long long num_update; 					// Number of updates//
+		int np_;					// number of parameters
+		T cost_;					// current cost funtion value
+		VectorType theta_;			// current parameter vector
+		unsigned long long iter_; 	// # iterations
+	public:
+		explicit RlsEstimatorBase(int n) : np_(n), theta_(n)
+		{
+			reset();
+		}
+		int np() const { return np_; }
+		const VectorType& estimatedPar() const { return theta_; }
+		T cost() const { return cost_; }
+		void setPar(const VectorType &v) { theta_ = v; }
+		const unsigned long long & iter() const { return iter_; }
+		T estimatedOutput(const VectorType &phi) const { return phi.dot(theta_); }
+		void reset() {
+			iter_ = 0;
+			cost_ = 0;
+			theta_.setZero();
+		}
+	};
 
-	public: 											//Set Defaults Values at Construction of Object//
-        RLS_Estimator(int n, real_num ff, real_num init)// n: number of factors, ff: forgrting factor, init: Initial Covarience function
-            : np(n), lambda(1.0),
-			init_covar(init),
-            theta(n),									// new parameters
-            P_matrix(n,n),								// [1 0 ; 0 1]
-            K(n),										// gain vector
-            temp(n),			 
-			num_update(0),								// Update number of iterations
-			cost(0),									// Cost function value
-            error(0)									// Error function value
-        {   
-            theta.setZero();
-			K.setZero();
-			P_matrix.setIdentity();
-			temp.setZero();
-			setLambda(ff);
-			setCovariance(init);
-			P_matrix = P_matrix * init;					// [init 0 ; 0 init]
+	/**
+	 * @brief Exp weighted RLS estimator with forgetting factor
+	 * 
+	 * @tparam T Real number type (float, double, long double)
+	 */
+	template <typename T>
+	class ExpWeightedRLS : public RlsEstimatorBase<T>
+	{
+	public:
+		using MatrixType = typename RlsEstimatorBase<T>::MatrixType;
+		using VectorType = typename RlsEstimatorBase<T>::VectorType;
 
+	protected:
+		T ff_;				// Forgetting Factor
+		MatrixType P;		// Covariance Matrix
+		VectorType k;		// Gain Vector
+		VectorType temp;	// temporary buffer
+		using RlsEstimatorBase<T>::theta_;
+		using RlsEstimatorBase<T>::cost_;
+		using RlsEstimatorBase<T>::np_;
+		using RlsEstimatorBase<T>::iter_;
+
+	public:															
+		explicit ExpWeightedRLS(int n, T ff = 0.98, T init_covar = 1.e6) 
+		: RlsEstimatorBase<T>(n), ff_(ff),
+		P(n, n), k(n), temp(n)
+		{
+			reset(init_covar);
+			setff(ff);
 		}
 
 		// Update of Parameters with New data (data)
-        void update_par(const Type_Vec& phi, real_num data) {
-			
-			temp = P_matrix * phi;
-		
-			//Set gain vector
-			K = temp / (phi.dot( temp) + lambda);
+		void update(const VectorType& phi, const T& data)
+		{
+			temp = P * phi;
 
-			//Calculate error and cost function values
-			error = data - phi.dot(theta);
-			cost = lambda * cost + error * error;
+			// Set gain vector
+			k = temp / (phi.dot(temp) + ff_);
 
-			//Calculation of new parameters//
-			theta += K * (error); 						// Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-			
-			//Calculation of new covariance//
-            for (int i = 0; i < np; i++) {
-				P_matrix(i, i) -= K(i) * temp(i);
-				P_matrix(i, i) /= lambda;
-				for (int j = 0; j < i; j++) {
-					P_matrix(i, j) -= K(i) * temp(j);
-					P_matrix(i, j) /= lambda;
-					P_matrix(j, i) = P_matrix(i, j);	// Matrix is symmetric - assign values for less computations
+			// Calculate error and cost function values
+			T error = data - phi.dot(theta_);
+			cost_ = ff_ * cost_ + error * error;
 
+			// Calculation of new parameters//
+			theta_ += k * error; 
+
+			// Calculation of new covariance//
+			for (int i = 0; i < np_; i++)
+			{
+				P(i, i) -= k(i) * temp(i);
+				P(i, i) /= ff_;
+				for (int j = 0; j < i; j++)
+				{
+					P(i, j) -= k(i) * temp(j);
+					P(i, j) /= ff_;
+					P(j, i) = P(i, j); // Matrix is symmetric - assign values for less computations
 				}
 			}
-			
-            num_update++; 								// Update number of iterations
+
+			iter_++; // Update number of iterations
 		};
 		//"Set" Functions//
-		void setLambda(real_num ff) {
-			if ((ff > 0) && (ff <= 1.0)) {
-				lambda = ff;
-			
+		int setff(T ff)
+		{
+			if ((ff > 0) && (ff <= 1.0))
+			{
+				ff_ = ff;
+				return 1;
 			}
-			else {
-				throw std::invalid_argument(
-					"Forgetting factor must be  (0 < lambda <= 1).");
-			}
+			return 0; 
 		};
-
-		void setCovariance(real_num init) {
-			if (init > 0.0) {
-				init_covar = init;
-			}
-			else {
-				throw std::invalid_argument(
-					"Covariance must be positive.");
-			}
-		};
+		T ff() { return ff_; }
 
 		//"Get" Functions//
-		const Type_Vec & getEstimatedParameters() const noexcept { return theta; }
-		const Type_Mat & getCovarianceMat() const noexcept { return P_matrix; }
-		const Type_Vec & getGains() const noexcept { return K; }
-		int getIterations() const noexcept { return num_update;  }
-		real_num getEstimatedOutput(Type_Vec& x) const noexcept { 
-			return x.dot(theta); } 						// x=time vector (t^0 t^1 .. t^n), theta=new parameters
-		real_num getCost() const noexcept { return cost; }
-		real_num getError() const noexcept { return error; }
-        real_num getLambda() const noexcept { return lambda; }
-        real_num getCovar() const noexcept { return init_covar; }
-		
-		//Reset Function
-		void reset() noexcept {
-            theta.setZero();
-            P_matrix.setIdentity();
-            P_matrix *= init_covar;
-            K.setZero();
-			cost = 0;
-			error = 0;
-			num_update = 0;
+		const MatrixType &covar() const noexcept { return P; }
+		const VectorType &gain()  const noexcept { return k; }
+
+		// Reset Function
+		void reset(T init_covar = 1) noexcept
+		{
+			iter_ = 0;
+			theta_.setZero();
+			P.setIdentity();
+			P *= init_covar;
+			k.setZero();
+			cost_ = 0;			
 		};
 	};
 
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------//
 
-    template <typename real_num>
-    class BlockRLS: public RLS_Estimator<real_num> {
-    public:
-        int window; 									// block size
-        typedef typename RLS_Estimator<real_num>::Type_Mat Type_Mat;
-        typedef typename RLS_Estimator<real_num>::Type_Vec Type_Vec;
-        Type_Mat pin;
-        Type_Vec pout;
-        using RLS_Estimator<real_num>::np;
-        using RLS_Estimator<real_num>::init_covar;
-        using RLS_Estimator<real_num>::lambda;		 	// Forgetting Factor
-        using RLS_Estimator<real_num>::cost;		 	// Cost function
-        using RLS_Estimator<real_num>::error;		 	// Error value
-        using RLS_Estimator<real_num>::theta;		 	// Matrix of Parameters
-        using RLS_Estimator<real_num>::P_matrix;		// Covariance Matrix
-        using RLS_Estimator<real_num>::K;			 	// Gain Vector
-        using RLS_Estimator<real_num>::temp;
-        using RLS_Estimator<real_num>::num_update;	 	// Number of updates
+	/**
+	 * @brief RLS estimator with forgetting factor
+	 * 
+	 * Updating based on P = Q*Q^T decomposition where Q is lower triangular
+	 * 
+	 * @tparam T Real number type (float, double, long double)
+	 */
+	template <typename T>
+	class ExpWeightedRLS2 : public RlsEstimatorBase<T>
+	{
 	public:
-        BlockRLS(int n, real_num ff, int win, real_num init) // 
-            : RLS_Estimator<real_num>( n, ff, init), 	// why???
-			window(win),
-            pout(win + 1),
-            pin(n, win + 1)
-		 {
-            // initialize regressors according to Zhang 2004
-            for (int i = 0; i < n; i++)
-                pin(i, win - n + i) = 1. / sqrt(init);
+		using MatrixType = typename RlsEstimatorBase<T>::MatrixType;
+		using VectorType = typename RlsEstimatorBase<T>::VectorType;
 
+	protected:
+		T ff_;				// Forgetting Factor
+		T invsqrtff_;		// 1/sqrt(ff)
+		MatrixType Q;		// Square-root Covariance Matrix
+		VectorType k;		// Gain Vector
+		VectorType f;	// temporary buffers
+		using RlsEstimatorBase<T>::theta_;
+		using RlsEstimatorBase<T>::cost_;
+		using RlsEstimatorBase<T>::np_;
+		using RlsEstimatorBase<T>::iter_;
+
+	public:															
+		explicit ExpWeightedRLS2(int n, T ff = 0.98, T init_covar = 1.e6) 
+		: RlsEstimatorBase<T>(n), ff_(ff),
+		Q(n, n), k(n), f(n)
+		{
+			reset(init_covar);
+			setff(ff);
 		}
-        void update_par(const Type_Vec& phi, real_num data, int ADD) // what is phi? And why do I use it to update my matrix?
-        {   
-			typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
-			
-			// shift elements 
 
-			if (ADD<window){							// if the window is not filled
-				for (int i=0; i<ADD; i++){
-					pin.col(i)=pin.col(i+1);
-				}
-				for (int i=0; i<ADD; i++){
-					pout(i)=pout(i+1);
-				}
-				pout(ADD)=data;							// add data in the end of the matrix
-	            pin.col(ADD)=phi;						// add phi in the end of the matrix
+		// Update of Parameters with New data (data)
+		void update(const VectorType& phi, const T& data)
+		{
+			// algorithm from Ljung & Soederstoem (1987) p. 328 
+			// f = Q.template triangularView<Eigen::Lower>().adjoint() * phi;
+			// T b = ff_ + f.squaredNorm();
+			// k = Q * f;
+			T b = ff_;
+			T error = data;
+			for (int i = 0; i < np_; ++i)
+			{
+				f(i) = 0;
+				for (int j = i; j < np_; ++j) f(i) += Q(j,i)*phi(j); // f = Q^T*phi
+				b += f(i)*f(i); // b = ff - f^T*f
+				k(i) = 0;
+				for (int j = 0; j <= i; j++) k(i) += Q(i,j)*f(j); // k = Q*f
+				error -= phi(i)*theta_(i);
 			}
-			else{
-				for (int i=0; i<window; i++){
-					pin.col(i)=pin.col(i+1);
-				}
-				for (int i=0; i<window; i++){
-					pout(i)=pout(i+1);
-				}
-				pout(window)=data;						// add data in the end of the matrix
-			    pin.col(window)=phi;					// add phi in the end of the matrix
-			}
-			// end of shift 
-
-            temp.setZero();
-			temp = P_matrix * phi;
-			
-			// UPDATE MATRIX //
-			K = temp / (lambda + phi.dot(temp)); 		// Gain Vector
-			error = data - theta.dot(phi);				// Error Value
-			theta += K * (error); 						// Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
 
 			
-            for (int i = 0; i < np; i++) {
-				P_matrix(i, i) -= K(i) * temp(i);
-				P_matrix(i, i) /= lambda;
-				for (int j = 0; j < i; j++) {
-					P_matrix(i, j) -= K(i) * temp(j);
-					P_matrix(i, j) /= lambda;
-					P_matrix(j, i) = P_matrix(i, j);	// Matrix is symmetric - assign values for less computations
+			// Calculate error and cost function values
+			// T error = data - phi.dot(theta_);
+			cost_ = ff_ * cost_ + error * error;
+
+			// Calculation of new parameters//
+			// theta_ += k * (error/b); 
+
+			// Calculation of new covariance //
+			// Q is lower triangular !!
+			T a = 1/(b + std::sqrt(b*ff_));
+			error /= b;
+			for (int i = 0; i < np_; i++)
+			{
+				theta_(i) += k(i)*error;
+				Q(i, i) -= a * k(i) * f(i);
+				Q(i, i) *= invsqrtff_;
+				for (int j = 0; j < i; j++)
+				{
+					Q(i, j) -= a * k(i) * f(j);
+					Q(i, j) *= invsqrtff_;
 				}
 			}
 
-			// DOWNDATE MATRIX //
-			num_update += 1; 							// Update number of iterations
-			temp = P_matrix * pin.col(0);				// This line take pout into consideration
-			K = temp / (lambda - temp.dot(pin.col(0))); // This line take pout into consideration
-
-			error = pout(0) - theta.dot(pin.col(0));	// This line take pout and pin int consideration
-			//CALCULATION OF  NEW PARAMETERS//
-			//cost = lambda * cost + error * error;
-
-            theta -= K * error; 						// Output is in ascending order , ie: a0 + a1*t + a2*t^2.....
-            for (int i = 0; i < np; i++) {
-				P_matrix(i, i) += K(i) * temp(i);
-				P_matrix(i, i) /= lambda;
-				for (int j = 0; j < i; j++) {
-					P_matrix(i, j) += K(i) * temp(j);
-					P_matrix(i, j) /= lambda;
-					P_matrix(j, i) = P_matrix(i, j);	// Matrix is symmetric - assign values for less computations
-				}
-			}
-
+			iter_++; // Update number of iterations
 		};
-
-		//Get Function
-        const typename RLS_Estimator<real_num>::Type_Vec& getpout() const noexcept { return pout; }
-        const typename RLS_Estimator<real_num>::Type_Mat& getpin() const noexcept { return pin; }
-        int getWindow() const { return window; }
-
-		//Reset Function
-		void reset() noexcept {
-            RLS_Estimator<real_num>::reset();
-            pin.setZero();
-            for (int i = 0; i < np; i++) {
-                pin(i, window - np + i) = 1./sqrt(init_covar);
+		//"Set" Functions//
+		int setff(T ff)
+		{
+			if ((ff > 0) && (ff <= 1.0))
+			{
+				ff_ = ff;
+				invsqrtff_ = 1/std::sqrt(ff_);
+				return 1;
 			}
-            pout.setZero();
+			return 0; 
 		};
+		T ff() { return ff_; }
 
+		//"Get" Functions//
+		const MatrixType &covar() const noexcept { return Q; }
+		const VectorType &gain()  const noexcept { return k; }
 
+		// Reset Function
+		void reset(T init_covar = 1) noexcept
+		{
+			iter_ = 0;
+			theta_.setZero();
+			Q.setIdentity();
+			Q *= std::sqrt(init_covar);
+			k.setZero();
+			cost_ = 0;			
+		};
 	};
+	
+	//----------------------------------------------------------------------------//
 
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    template <typename real_num>
-    class Augmented_Cholesky_RLS_Estimator: public RLS_Estimator<real_num> {
-    public:
-
-		typedef Matrix <real_num , Dynamic, Dynamic > Type_Mat;
-		typedef Matrix< real_num, Dynamic, 1 > Type_Vec;
-		int window;										// block size
-		int counter;
-		int N;
-		Type_Mat Phi_Aug;
-		//Type_Vec YY;
-		Matrix <float , Dynamic, Dynamic > L;
-
-		Type_Mat v_up;
-		Type_Mat v_down;
-		Type_Mat L_Aug;
-		Type_Mat A_Aug;
-		//Type_Mat phi_save;
-		//Matrix <float , Dynamic, Dynamic > L;
-
-		LLT<Type_Mat> llt;
-        using RLS_Estimator<real_num>::np;
-        using RLS_Estimator<real_num>::init_covar;
-        using RLS_Estimator<real_num>::cost;		 	// Cost function
-        using RLS_Estimator<real_num>::error;		 	// Error value
-		using RLS_Estimator<real_num>::lambda;		 	// Forgetting Factor
-        using RLS_Estimator<real_num>::theta;		 	// Matrix of Parameters
-        using RLS_Estimator<real_num>::P_matrix;		// Covariance Matrix
-        using RLS_Estimator<real_num>::K;			 	// Gain Vector
-        using RLS_Estimator<real_num>::temp;
-        using RLS_Estimator<real_num>::num_update;	 	// Number of updates
+	/**
+	 * @brief Ring buffer object
+	 *
+	 * @tparam T Real number type (float, double, long double)
+	 */
+	template <typename T>
+	class RingBuffer
+	{
 	public:
-        Augmented_Cholesky_RLS_Estimator(int n, int win)
-														// n: number of factors, init: Initial Covarience function
-        : RLS_Estimator<real_num>( n, 1, 1), 	
-			window(win),
-			N(n),
-			v_up(N+1,1),
-			v_down(N+1,1),
-			L_Aug(N+1,N+1),
-			A_Aug(window,N+1),
-			Phi_Aug(window,N+1)
-		{   
+		using MatrixType = typename RlsEstimatorBase<T>::MatrixType;
+		using VectorType = typename RlsEstimatorBase<T>::VectorType;
+		typedef Eigen::Block<const MatrixType, Eigen::Dynamic, 1, Eigen::RowMajor> BlockType;
+	public:
+		/**
+		 * @brief Construct a new Ring Buffer object
+		 *
+		 * @param n : number of column vectors in buffer
+		 * @param w : width of each vector
+		 */
+                RingBuffer(int n, int w) : buff_(w, n), i_(0)
+		{
+			buff_.setZero();
+		}
+
+		int size() const { return buff_.cols(); }
+		int width() const { return buff_.rows(); }
+
+		void resize(int n, int w) {
+                        buff_ = MatrixType(w,n);
 			reset();
 		}
 
-        void update_par( Type_Vec phi, real_num Y )
-        {   
-			if (counter < N+1) {
-				for (int i=0; i<N; i++){
-					Phi_Aug(counter,i)=phi(i);
-					}
-				Phi_Aug(counter,N)=Y;
-			}
-			else if (counter == N+1) {
-				for (int i=0; i<N; i++){
-					Phi_Aug(counter,i)=phi(i);
-				}
-				Phi_Aug(counter,N)=Y;
+		const MatrixType& buff() const { return buff_; }
 
-				A_Aug=Phi_Aug.adjoint()*Phi_Aug;
-				llt.compute(A_Aug);
-				L_Aug =llt.matrixL();
-				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-				L=(L_Aug.topLeftCorner(2,2)); 			//gives error if I initialize it with Type_Mat or real_num
-				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
+		template <class V>
+		void push(const V &v)
+		{
+			int n = v.size();
+			n = std::min(width(), n);
+			for (int j = 0; j < n; ++j)
+				buff_(j, i_) = v(j);
+			i_++;
+            i_ %= size();
+		}
 
-			}
-			else if ( counter < window) {
+		// overloads for scalar values
+		void push(const long double &v) { push_scalar(v); }
+		void push(const double &v) { push_scalar(v); }
+		void push(const float &v) { push_scalar(v); }
 
-				for (int i=0; i<N; i++){
-					Phi_Aug(counter,i)=phi(i);
-				}
-				Phi_Aug(counter,N)=Y;
+		const BlockType first() const {
+			return buff_.col(i_); // i_ points to the first block in the buffer
+		}
+		const BlockType last() const {
+			return buff_.col(i_ ? i_ - 1 : size() - 1); // i_-1 points to the last
+		}
+		const BlockType	at(int i) const
+		{
+			int j = (i_ + i) % size();
+			return buff_.col(j); 
+		}
 
-				for (int i=0; i<N; i++){
-					v_up(i,0)=phi(i);
-				}
-				v_up(N,0)=Y;
-				llt=update_llt(llt, v_up); 
-				L_Aug =llt.matrixL();
-				
-				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-				L=(L_Aug.topLeftCorner(2,2)); 			//gives error if I initialize it with Type_Mat or real_num
-				(L.adjoint()).triangularView< Upper>().solveInPlace(theta); 
-			}
-			else {
-				
-				for (int i=0; i<N; i++){
-					v_up(i,0)=phi(i);
-				}
-				v_up(N,0)=Y;
+		void reset()
+		{
+			buff_.setZero();
+            i_ = 0;
+		}
 
-				for (int i =0; i<N; i++){
-					v_down(i,0)=Phi_Aug(0,i);
-		     	}
-				v_down(N,0)=Phi_Aug(0,N);
+	private:
+		MatrixType buff_;
+		int i_;
 
-				llt=up_down_date_llt(llt, v_up, v_down); 
-				
-				for (int i=0; i<window-1; i++){
-					Phi_Aug.row(i)=Phi_Aug.row(i+1);
-				}
-				for (int i=0; i<N; i++){
-					Phi_Aug(window-1,i)=phi(i);
-				}
-				Phi_Aug(window-1,N)=Y;
-
-				L_Aug =llt.matrixL();
-				theta=(L_Aug.bottomLeftCorner(1,2)).adjoint();
-				L=(L_Aug.topLeftCorner(2,2)); 			//gives error if I initialize it with Type_Mat or real_num
-				(L.adjoint()).triangularView<Eigen::Upper>().solveInPlace(theta); 
-
-			}
-		counter+=1;
-		};
-		LLT<Type_Mat> update_llt(LLT<Type_Mat> llt, const Type_Vec v ){ llt.rankUpdate(v, 1); return llt; }
-		LLT<Type_Mat> up_down_date_llt(LLT<Type_Mat> llt, const Type_Vec& v_up, const Type_Vec& v_down ){ 
-			llt.rankUpdate(v_up, +1); 
-			llt.rankUpdate(v_down, -1);
-			return llt; }
-
-
-
-
-		//Get Function
-        //const typename RLS_Estimator<real_num>::Type_Vec& getpout() const noexcept { return pout; }
-        //const typename RLS_Estimator<real_num>::Type_Mat& getpin() const noexcept { return pin; }
-        int getWindow() const { return window; }
-
-
-		//Reset Function
-			void reset() noexcept {
-			counter=0;
-            theta.setZero();
-			//K.setZero();
-			//P_matrix.setIdentity();
-			//temp.setZero();
-			//P_matrix = P_matrix * init;				// [init 0 ; 0 init]
-			Phi_Aug.setZero();
-			v_up.setZero();
-			v_down.setZero();
-			L_Aug.setZero();
-			A_Aug.setZero();
-			//phi_save.setZero(window,N);
-			L.setZero(2,2);
-			v_up(0,0)=1;
-			v_down(0,0)=1;
-			//YY.setZero(window);
-
-
-		};
-
+		template <typename U>
+		void push_scalar(const U &v)
+		{
+			buff_(0, i_) = v;
+			i_++;
+            i_ %= size();
+		}
 	};
-//-----------------------------------------------------------------------------------------------------------------------------------------
-    //Subclass of RLS_Estimator that implemenets a polynomial estimation
-/* template <typename T, class Estimator>
-    class PolyRLS : public Estimator
-    {
-    };
 
-  template<typename T>
-    class PolyRLS<real_num, RLS_Estimator<real_num>> : public RLS_Estimator<real_num>
-    {
-        typename RLS_Estimator<real_num>::Type_Vec phi;
-      public:
-        PolyRLS(int n, real_num ff, real_num init) : // n: number of factors, lam: forgrting factor, init: Initial Covarience function
-            RLS_Estimator<real_num>(n, ff, init),
-            phi(n) 
-            {	
-				cout << "yes" << endl;
+	//----------------------------------------------------------------------------//
 
-                for (int i=0; i<n; i++)
-			    phi(i)=1;
-			}
-
-        void update_par(real_numdata) {
-
-            //Set regressors with regards to updates//
-            // phi(0) = 1.; this is set in constructor
-            for (int i = 1; i < this->np; i++) {
-                phi(i) = phi(i - 1) * this->num_update;
-				
-				cout << "this:" << this << endl;
-            
-			}
-
-            RLS_Estimator<real_num>::update_par(phi, data);
-        
-			cout << "phi dot theta =" << dot(phi, this->theta) << endl;
-
-        }
-		real_num getEstimatedOutput() const noexcept { 
-			
-			cout << "this:" << this << endl;
-
-			return phi.dot(this->theta); }
-    };    
-	
-	template<typename T>
-    class PolyRLS<real_num, BlockRLS<real_num>> : public BlockRLS<T>
-    {
-        typename BlockRLS<T>::Type_Vec phi;
-      public:
-        PolyRLS(int n, int w, real_num init) :
-            BlockRLS<T>(n, w, init), // n: number of factors, w: window size, init: Initial Covarience function
-            phi(n)
-            {
-                for (int i=0; i<n;i++)
-			    phi(i)=1;
-			}
-        void update_par(real_numdata) {
-
-            //Set regressors with regards to updates//
-            // phi(0) = 1.; this is set in constructor
-            for (int i = 1; i < this->np; i++) {
-                phi(i) = phi(i - 1) * this->num_update;
-            }
-
-            BlockRLS<real_num>::update_par(phi, data);
-
-        }
-        real_num getEstimatedOutput() const noexcept { 
-			
-			cout << "phi dot theta =" << dot(phi, this->theta) << endl;
-
-			return phi.dot(this->theta); }
-    };
+	/**
+	 * @brief Block RLS estimator 
+	 * 
+	 * RLS estimation is employed on a fixed-size, rolling block of data
+	 * 
+	 * @tparam T Real number type (float, double, long double)
 	 */
+	template <typename T>
+	class BlockRLS : public RlsEstimatorBase<T>
+	{
+	public:
+		using MatrixType = typename RlsEstimatorBase<T>::MatrixType;
+		using VectorType = typename RlsEstimatorBase<T>::VectorType;
+
+	protected:
+		RingBuffer<T> phi_buff_, data_buff_; // window storage buffers
+		Eigen::LLT< MatrixType > llt;
+		MatrixType P;		// Covariance Matrix
+		VectorType k;		// Gain Vector
+		VectorType temp;	// temporary buffer
+		using RlsEstimatorBase<T>::theta_;
+		using RlsEstimatorBase<T>::cost_;
+		using RlsEstimatorBase<T>::np_;
+		using RlsEstimatorBase<T>::iter_;
+
+	public:
+		explicit BlockRLS(int n, int w = 10, T init_covar = 1.e6) 
+                : RlsEstimatorBase<T>(n), phi_buff_(w, n), data_buff_(1, n),
+                  P(n,n), k(n), temp(n)
+		{
+			reset(init_covar);
+		}
+		void update(const VectorType& phi, const T& data)
+		{
+			// UPDATE //
+			temp = llt.matrixU() * phi;
+			T d = 1./(1. + temp.squaredNorm());
+			temp = llt.matrixL() * temp;
+			k = temp * d; // Gain Vector
+			T error = data - theta_.dot(phi);	// Error Value
+			theta_ += k * error;			
+
+			llt.rankUpdate(temp, -d);
+
+			cost_ += error*error*d*(1-d);
+			error = data - theta_.dot(phi);
+			cost_ += error*error;
+
+			// DOWNDATE //
+            temp = llt.matrixU() * phi_buff_.first();
+			d = temp.squaredNorm();
+			if (d != 1.) {
+				temp = llt.matrixL() * temp;
+				d = 1./(1. - d);  
+				k = temp * d; 
+				error = data_buff_.first()(0) - theta_.dot(phi_buff_.first()); 
+				theta_ -= k * error; 
+
+				llt.rankUpdate(temp, d);
+				
+				cost_ -= error*error*d*(1-d);
+				error = data_buff_.first()(0) - theta_.dot(phi_buff_.first());
+				cost_ -= error*error;
+			}
+
+			// store phi, data in window buffers
+			phi_buff_.push(phi);
+			data_buff_.push(data);
+
+			iter_++; // Update number of iterations
+		};
+
+		int size() const { return phi_buff_.size(); }
+		void setSize(int w) {
+			phi_buff_.resize(w, np_);
+			data_buff_.resize(w, 1);
+			VectorType th = theta_;
+			T c = cost_;
+			MatrixType P0 = P;
+			reset();
+			theta_ = th;
+			P = P0;
+			cost_ = c;
+		}
+
+		// Reset Function
+		void reset(T init_covar = 1.e6) noexcept
+		{
+			iter_ = 0;
+			theta_.setZero();
+			P.setIdentity();
+			P *= init_covar;
+			k.setZero();
+			cost_ = 0;	
+			llt.compute(P);		
+
+			phi_buff_.reset();
+			data_buff_.reset();
+
+			// initialize regressors according to Zhang 2004
+			VectorType p(np_);
+			p.setZero();
+			int i = 0;
+			for (; i < size() - np_; ++i) phi_buff_.push(p);
+			for (i = 0; i < np_; ++i)
+			{
+				p.setZero();
+				p(i) = 1 / std::sqrt(init_covar);
+				phi_buff_.push(p);
+			}
+		};
+	};
+
+	//----------------------------------------------------------------------------//
+
+	/**
+	 * @brief Block RLS estimator with Cholesky decomposition
+	 * 
+	 * Block RLS utilizing up-/down-dating of the Cholesky decomposition of the
+	 * normal equation matrix.
+	 * 
+	 * @tparam T Real number type (float, double, long double)
+	 */
+	template <typename T>
+	class CholeskyBlockRls : public RlsEstimatorBase<T>
+	{
+	public:
+		using MatrixType = typename RlsEstimatorBase<T>::MatrixType;
+		using VectorType = typename RlsEstimatorBase<T>::VectorType;
+
+	protected:
+		RingBuffer<T> phi_buff_; // block storage buffer
+		VectorType aug_phi;
+		Eigen::LLT< MatrixType > llt;
+		using RlsEstimatorBase<T>::theta_;
+		using RlsEstimatorBase<T>::cost_;
+		using RlsEstimatorBase<T>::np_;
+		using RlsEstimatorBase<T>::iter_;
+
+	public:
+		explicit CholeskyBlockRls(int n, int w = 10)
+		: RlsEstimatorBase<T>(n), phi_buff_(w, n+1), aug_phi(n+1)
+		{
+			reset();
+		}
+
+		void update(const VectorType& phi, const T& y)
+		{
+			aug_phi.head(np_) = phi;
+			aug_phi(np_) = y;
+
+        	if (iter_ >= size()) { // buffer is full
+				// update
+				llt.rankUpdate(aug_phi);
+				// downdate
+				llt.rankUpdate(phi_buff_.first(), -1);
+				solve();
+				phi_buff_.push(aug_phi);
+			} else {
+				phi_buff_.push(aug_phi);
+				if (iter_ < np_) {} // very few data 
+				else if (iter_ == np_) {
+					// init LLT
+					const MatrixType& b = phi_buff_.buff();
+					llt.compute((b.leftCols(np_+1)) * (b.leftCols(np_+1).adjoint()));
+					solve();
+				} else {
+					// update only
+					llt.rankUpdate(aug_phi);
+					solve();
+				}
+			}
+
+			iter_++; // Update number of iterations
+		};
+
+		int size() const { return phi_buff_.size(); }
+		void setSize(int w) {
+			phi_buff_.resize(w, np_+1);
+			VectorType th = theta_;
+			T c = cost_;
+			reset();
+			theta_ = th;
+			cost_ = c;
+		}
+
+
+		// Reset Function
+		void reset() noexcept
+		{
+			RlsEstimatorBase<T>::reset();
+			phi_buff_.reset();
+		};
+
+	private:
+		void solve()
+		{
+			const MatrixType& L =  llt.matrixLLT();
+			cost_ = L(np_, np_)*L(np_, np_);
+			theta_ = L.bottomLeftCorner(1, np_).adjoint();
+			L.adjoint().topLeftCorner(np_, np_).template triangularView<Eigen::Upper>().template solveInPlace(theta_);
+		}
+	};
+
+	//-----------------------------------------------------------------//
+
+	// Subclass of RLS_Estimator that implemenets a polynomial estimation
+
+	/**
+	 * @brief Polynomial RLS estimator object 
+	 * 
+	 * A data sequence $y_t$, $t=0,1,2,...$ is fitted to a polynomial
+	 * $y(t) = \theta_0 + \theta_1\cdot t + theta_2\cdot t^2 + ...$
+	 * using one of the RLS estimators
+	 * 
+	 * @tparam EstimatorType_ The type of estimator used
+	 */
+	template < typename EstimatorType_ >
+	class PolyRLS : public EstimatorType_
+	{
+	public:
+		typedef EstimatorType_ EstimatorType;
+		using VectorType = typename EstimatorType::VectorType;
+		using ScalarType = typename EstimatorType::ScalarType;
+	protected:
+		using EstimatorType::iter_;
+		using EstimatorType::np_;
+		using EstimatorType::theta_;
+		VectorType phi_;
+	public:
+		explicit PolyRLS(int n) : EstimatorType(n), phi_(n)
+		{
+			for (int i = 0; i < n; i++)	phi_(i) = 1;
+		}
+
+		void update(const ScalarType &data)
+		{
+			// Set regressors with regards to updates//
+			//  phi(0) = 1.; this is set in constructor
+			for (int i = 1; i < np_; i++)
+				phi_(i) = phi_(i - 1) * iter_;
+
+			EstimatorType::update(phi_, data);
+		}
+		ScalarType estimatedOutput() const noexcept
+		{
+			return EstimatorType::estimatedOutput(phi_);
+		}
+		ScalarType estimatedRate() const noexcept
+		{
+			ScalarType r = 0.;
+			for (int i = 1; i < np_; i++)
+					r += i * phi_(i - 1) * theta_(i);
+			return r;
+		}
+		VectorType phi() const { return phi_; }
+	};
 
 } // namespace RLS
 
