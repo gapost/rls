@@ -103,9 +103,9 @@ The RLS with recursion for $Q$ becomes
 >
 > $$ k = Q(t-1) \cdot u $$
 >
-> $$ \theta(t) = \theta(t-1) + k\, [e(t)/\beta] $$
+> $$ \theta(t) = \theta(t-1) + k \, [e(t)/\beta] $$
 >
-> $$ Q(t) = \left[Q(t-1) - \alpha \, k\cdot u^T\right]/\sqrt{\lambda} $$
+> $$ Q(t) = \left[Q(t-1) - \alpha \, k \cdot u^T\right]/\sqrt{\lambda} $$
 >
 > $$ J(t) = \lambda J(t-1) + e^2(t) $$
 
@@ -123,24 +123,40 @@ In each recursion the estimate is first *updated* with the new data point and th
 The updating sequence is given by
 
 > $$ e(t) = y(t) - \theta^T(t-1)\cdot \phi(t) $$
+> 
 > $$ u = P(t-1)\cdot \phi(t) $$
+> 
 > $$ \beta = \left[ 1 + \phi(t)^T \cdot u \right]^{-1} $$
+> 
 > $$ k = \beta \, u $$
+> 
 > $$ \bar{\theta}(t) = \theta(t-1) + k\, e(t) $$
+> 
 > $$ \bar{P}(t) = \left[P(t-1) - k \cdot u^T\right] $$
-> $$ e'(t) = y(t) - \theta(t)^T\cdot \phi(t) $$
-> $$ \bar{J}(t) = J(t-1) + e^2(t)\,\beta\,(1-\beta) + e'^2(t) $$
+> 
+> $$ e'(t) = y(t) - \theta(t)^T cdot \phi(t) $$
+> 
+> $$ \bar{J}(t) = J(t-1) + e^2(t) \, \beta\,(1-\beta) + e'^2(t) $$
+> 
 
 The down-dating sequence is
 
 > $$ e(t-N) = y(t-N) - \bar{\theta}^T(t)\cdot \phi(t-N) $$
+> 
 > $$ u = P(t)\cdot \phi(t-N) $$
+> 
 > $$ \beta = \left[ 1 - \phi(t-N)^T \cdot u \right]^{-1} $$
-> $$ k = \beta\, u $$
-> $$ \theta(t) = \theta(t) - k\, e(t-N) $$
+> 
+> $$ k = \beta \, u $$
+> 
+> $$ \theta(t) = \theta(t) - k \, e(t-N) $$
+> 
 > $$ P(t) = \left[P(t-1) + k \cdot u^T\right] $$
+> 
 > $$ e'(t-N) = y(t) - \theta(t)^T\cdot \phi(t-N) $$
-> $$ J(t) = \bar{J}(t) - e^2(t-N)\,\beta\,(1-\beta) - e'^2(t-N) $$
+> 
+> $$ J(t) = \bar{J}(t) - e^2(t-N) \, \beta\,(1-\beta) - e'^2(t-N) $$
+> 
 
 ### 3. Block RLS with square root update
 
