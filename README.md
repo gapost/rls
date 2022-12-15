@@ -2,76 +2,142 @@
 
 Recursive least squares in C++
 
-# About
+## About
 
-Recursive least squares (RLS) is an adaptive filter algorithm that recursively finds the coefficients that minimize a weighted linear least squares cost function relating to the input signals. This approach is in contrast to other algorithms such as the least mean squares (LMS) that aim to reduce the mean square error. In the derivation of the RLS, the input signals are considered deterministic, while for the LMS and similar algorithm they are considered stochastic. Compared to most of its competitors, the RLS exhibits extremely fast convergence. However, this benefit comes at the cost of high computational complexity.
+Recursive least squares (RLS) refers to algorithms that recursively find the coefficients that minimize a weighted linear least squares cost function. 
 
-## Exponential:
-The exponential algorithm works as follows:
-$`N= `$ number of parameters, 
+It is assumed that a measured time-dependent quantity $y(t)$ follows a linear model plus noise
 
-$`λ= `$forgetting factor, 
+$$ y(t) = \theta^T \cdot \phi(t) + e(t) $$
 
-$`Φ= \begin{bmatrix}r_1(n)\\r_2(n)\\...\end{bmatrix}`$ , is the matrix of regressors used to calculate the parameters.
+where $\theta$ is a parameter vector, $\phi(t)$ is a vector of known functions of time and $e(t)$ is white noise, $\langle e(t) \rangle = 0$, $\langle e(t)e(t') \rangle = \sigma^2\delta(t-t')$.
 
-$`P= \begin{bmatrix} P(0) & 0 & ..\\0 & P(0) & ....\\...\end{bmatrix}`$ , is the covariance matrix and $`P(0)`$ is an initial large value to declare indifference.
+A least squares cost function is defined as
 
-$`e(n)`$ is the error from new data with the previous parameters.
+$$ J(\theta) = \sum_t {w(t) \left[ y(t) - \theta^T \cdot \phi(t) \right]^2} $$
 
-$`d(n)`$ is the new data.
+where $w(t)$ is a weighting function.
 
-$`g(n)`$ is the gain vector used for correction.
+RLS algorithms seek to estimate $\theta$ that minimizes $J$ and recursively refine this estimation as new data become available. This is acheived with a very elegant numerical technique which is given here very briefly. 
 
-$`w(n)`$ is the vector of parameters that are calculated.
+The solution of the least squares problem (for $w(t)=1$) is given by the normal equations
 
-## Recursion:
+$$ \left[ \Phi^T \cdot \Phi \right] \theta = A\cdot \theta = \Phi^T\cdot Y \rightarrow \theta = A^{-1}\cdot \Phi^T\cdot Y$$
 
-$`e(n) = d(n) - Φ^T(n)w(n-1)`$ , calculating new error.
+where $\Phi = [\phi(1) \; \phi(2) \dots ]^T$, $Y = [y(1) \; y(2) \dots ]^T$
 
-$`g(n) = P(n-1)Φ(n) / ( λ + Φ^T(n)P(n-1)Φ(n) )`$, calculating new gain vector.
+When a new data point becomes available the matrix $A$ is modified as
 
-$`P(n) = (1/λ)(P(n-1) -g(n)Φ^T(n)P(n-1))`$, calculate new covariance matrix.
+$$ A' = A + \phi \cdot \phi^T $$
+ 
+ The inverse of $A'$, $P'=A'^{-1}$  can be obtained from $P=A^{-1}$ using the **Wilkinson** matrix formula:
 
-$`w(n) = w(n-1) + e(n)g(n)`$, calculate new parameters, estimate and repeat.
+ $$ P' = (A + \phi \cdot \phi^T)^{-1} = P - \frac{P\cdot\phi\cdot\phi^T\cdot P}{1 + \phi^T\cdot P\cdot \phi} $$
 
-The algorithm typically uses values for the forgetting factor between 0.98 and 1. Its 
-purpose is to accurately estimate the next value of the output depending on the input
-of the regressors by calculating the correct parameters. Changing the forgetting factor
-changes how much the algorithm takes into account past values of the output.
+ Thus, in RLS algorithms we keep a copy of $P$ which is updated by the above formula. Note that $P$ is the covariance matrix of $\theta$.
 
-## Rectangular Window:
+ The parameters are updated by 
 
-The rectangular window approach uses the N last points to estimated the future values.
-It uses the same algorithm as the exponential, with a forgetting factor of 1, in addition to removing 
-observations from the estimated parameters.
+$$ e(t) = y(t) - \theta^T(t-1)\cdot \phi(t) $$
 
-## Recursion:
+$$ \theta' = \theta + k\, e(t) $$
 
-$`e_{i+N,i} = d_{i+N} - (Φ_{i+N})^Tw_{i+N-1,i}`$ , calculating new error.
+where $k$ is the "gain" which is defined below.
 
-$`g_{i+N,i} = P_{i+N-1,i}Φ_{i+N} / ( 1 + (Φ_{i+N})^TP_{i+N-1,i}Φ_{i+N} )`$, calculating new gain vector.
+## Implemented Algorithms
 
-$`P_{i+N,i} = (P_{i+N-1,i} - g_{i+N,i}(Φ_{i+N})^TP_{i+N-1,i})`$, calculate new covariance matrix.
+### 1. Exponentially weighted RLS
 
-$`w_{i+N,i} = w_{i+N-1,i} + e_{i+N,i}g_{i+N,i}`$, calculate new parameters, estimate and repeat.
+In this algorithm the weighting function is
 
+$$ w(t) = \lambda ^ {n-t}, \quad t\leq n$$
 
-In addition to the above recursion, the following recursive operation takes place when the algorithm
-has been give over N points, where N the length of the rectangular window.
+where $0 < \lambda \leq 1$ is the "forgetting factor". The data are exponentially weighted so that older data are "forgotten". The effective   forgetting time constant $\tau$ can be found from
 
-$`e_{i+N,i} = d_i - (Φ_i)^Tw_{i+N,i}`$ , calculating new error.
+$$ \lambda = e^{-1/\tau} \approx 1 - 1/\tau $$
 
-$`g_{i+N,i+1} = P_{i+N,i}Φ_i / ( 1 - (Φ_i)^TP_{i+N,i}Φ_i )`$, calculating new gain vector.
+The recursion is given by
 
-$`P_{i+N,i+1} = (P_{i+N,i} - g_{i+N,i+1}(Φ_i)^TP_{i+N,i})`$, calculate new covariance matrix.
+> $$ e(t) = y(t) - \theta^T(t-1)\cdot \phi(t) $$
+> $$ u = P(t-1)\cdot \phi(t) $$
+> $$ k = u / \left[ \lambda + \phi^T(t)\cdot u\right] $$
+> $$ \theta(t) = \theta(t-1) + k\, e(t) $$
+> $$ P(t) = \left[P(t-1) - k \cdot u^T\right]/\lambda $$
+> $$ J(t) = \lambda J(t-1) + e^2(t)
 
-$`w_{i+N,i+1} = w_{i+N,i} - e_{i+N,i}g_{i+N,i+1} `$, calculate new parameters, estimate and repeat.
+The algorithm is still valid for $\lambda=1$ but with infinite memory length ($\tau \to \infty$)
 
+### 2. Exponentially weighted RLS with square-root algorithm
 
-1) A general exponential estimator where the input are the regressors and the data
-2) An exponential polynomial estimator where the regressors are calculated from the iterations 
-of the class
-3) A rectangular window estimator where only the N points are taken into account
+The square root algorithms (initially due to Potter (1963)) utilize the fact that $A$ and $P$ are symmetric, positive definite matrices. This can be understood e.g. by the fact that $J(\theta)$ close to the minimum can be expanded to 2nd order in $\theta$
+$$ J = J_0 + \theta^{-1} P^{-1} \theta $$
+thus the matrix $A=P^{-1}$ must be positive definite so that there is a minimum.
+
+Such matrices can be Cholesky-decomposed as $P=Q\cdot Q^T$ where $Q$ is lower triangular.
+$Q$ is also called the square root of $P$, thus the name of the algorithm.
+The covariance update can be turned into an update of $Q$:
+
+$$ P' = Q'\cdot Q'^T = Q\left[ I - \alpha u\cdot u^T \right] Q^T$$
+
+where $u=Q^T \cdot\phi$ and $\alpha = (1 + u^T\cdot u )^{-1}$.
+
+It can be easily shown that
+
+$$ \left[ I - \alpha u\cdot u^T \right]  = \left[ I - \sigma u\cdot u^T \right]^2 $$
+
+with $\sigma = \alpha / \left[ 1 + \sqrt{1 + \alpha u^T\cdot u}\right]$. Finally
+
+$$ Q' = Q \left[ I - \sigma u\cdot u^T \right]$$
+
+The benefit of $Q$ updating is that it ensures that $P$ retains symmetry and positive-definetness.
+
+The RLS with recursion for $Q$ becomes
+
+> $$ e(t) = y(t) - \theta^T(t-1)\cdot \phi(t) $$
+> $$ u = Q^T(t-1)\cdot \phi(t) $$
+> $$ \beta = \lambda + u^T \cdot u $$
+> $$ \alpha = 1 / \left[\beta + \sqrt{\beta\,\lambda}\right] $$
+> $$ k = Q(t-1)\cdot u $$
+> $$ \theta(t) = \theta(t-1) + k\, [e(t)/\beta] $$
+> $$ Q(t) = \left[Q(t-1) - \alpha \, k\cdot u^T\right]/\sqrt{\lambda} $$
+> $$ J(t) = \lambda J(t-1) + e^2(t)
+
+This algorithm is taken from Ljung & Soederstroem (1987) "Theory & Practice of Recursive Identification", p. 328
+
+Note that this algorithm does not make $Q$ lower triangular. However it ensures that $P=Q\cdot Q^T$.
+
+**TODO:** We are updating only the lower triangular Q and it is working. Why??
+
+### 3. Block RLS
+
+The rectangular moving block RLS uses the last $N$ points to estimate the parameters.
+In each recursion the estimate is first *updated* with the new data point and then *downdated* by removing the oldest point.
+
+The updating sequence is given by
+
+> $$ e(t) = y(t) - \theta^T(t-1)\cdot \phi(t) $$
+> $$ u = P(t-1)\cdot \phi(t) $$
+> $$ \beta = \left[ 1 + \phi(t)^T \cdot u \right]^{-1} $$
+> $$ k = \beta \, u $$
+> $$ \bar{\theta}(t) = \theta(t-1) + k\, e(t) $$
+> $$ \bar{P}(t) = \left[P(t-1) - k \cdot u^T\right] $$
+> $$ e'(t) = y(t) - \theta(t)^T\cdot \phi(t) $$
+> $$ \bar{J}(t) = J(t-1) + e^2(t)\,\beta\,(1-\beta) + e'^2(t) $$
+
+The down-dating sequence is
+
+> $$ e(t-N) = y(t-N) - \bar{\theta}^T(t)\cdot \phi(t-N) $$
+> $$ u = P(t)\cdot \phi(t-N) $$
+> $$ \beta = \left[ 1 - \phi(t-N)^T \cdot u \right]^{-1} $$
+> $$ k = \beta\, u $$
+> $$ \theta(t) = \theta(t) - k\, e(t-N) $$
+> $$ P(t) = \left[P(t-1) + k \cdot u^T\right] $$
+> $$ e'(t-N) = y(t) - \theta(t)^T\cdot \phi(t-N) $$
+> $$ J(t) = \bar{J}(t) - e^2(t-N)\,\beta\,(1-\beta) - e'^2(t-N) $$
+
+### 3. Block RLS with square root update
+
+Similar to the above, the block RLS algorithm can be formulated with update of the square root of $P$.
 
 
 
