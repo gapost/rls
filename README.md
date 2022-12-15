@@ -63,7 +63,7 @@ The recursion is given by
 > $$ k = u / \left[ \lambda + \phi^T(t)\cdot u\right] $$
 > $$ \theta(t) = \theta(t-1) + k\, e(t) $$
 > $$ P(t) = \left[P(t-1) - k \cdot u^T\right]/\lambda $$
-> $$ J(t) = \lambda J(t-1) + e^2(t)
+> $$ J(t) = \lambda J(t-1) + e^2(t) $$
 
 The algorithm is still valid for $\lambda=1$ but with infinite memory length ($\tau \to \infty$)
 
@@ -94,13 +94,13 @@ The benefit of $Q$ updating is that it ensures that $P$ retains symmetry and pos
 The RLS with recursion for $Q$ becomes
 
 > $$ e(t) = y(t) - \theta^T(t-1)\cdot \phi(t) $$
-> $$ u = Q^T(t-1)\cdot \phi(t) $$
+> $$ u = Q^T(t-1) \cdot \phi(t) $$
 > $$ \beta = \lambda + u^T \cdot u $$
 > $$ \alpha = 1 / \left[\beta + \sqrt{\beta\,\lambda}\right] $$
-> $$ k = Q(t-1)\cdot u $$
+> $$ k = Q(t-1) \cdot u $$
 > $$ \theta(t) = \theta(t-1) + k\, [e(t)/\beta] $$
 > $$ Q(t) = \left[Q(t-1) - \alpha \, k\cdot u^T\right]/\sqrt{\lambda} $$
-> $$ J(t) = \lambda J(t-1) + e^2(t)
+> $$ J(t) = \lambda J(t-1) + e^2(t) $$
 
 This algorithm is taken from Ljung & Soederstroem (1987) "Theory & Practice of Recursive Identification", p. 328
 
