@@ -44,6 +44,15 @@ $$ \theta' = \theta + k\, e(t) $$
 
 where $k$ is the "gain" which is defined below.
 
+## Examples
+
+1. A system with input $u(t)$ and output $y(t)=s\cdot u(t) + y_0$, where $s$ and $y_0$ vary with time. RLS is used to obtain an estimate of $s$ and $y_0$.
+![Example 1](filter/rlstest.png)
+
+2. A timeseries $y(t)$ is fitted with a polynomial $f(t;\theta)=\theta_0 + \theta_1\cdot t$ to estimate the time-dependent parameters $(\theta_0,\theta_1)$ and thus obtain the derivative $dy/dt$
+
+![Example 2](filter/polyrlstest.png)
+
 ## Implemented Algorithms
 
 ### 1. Exponentially weighted RLS
@@ -157,5 +166,34 @@ The down-dating sequence is
 
 Similar to the above, the block RLS algorithm can be formulated with update of the square root of $P$.
 
+## Getting started
+
+The algorithms are organized in a number of templated objects which are defined in 2 header files:
+- [RLS.h](./source/RLS.h) defines the RLS algorithms
+- [PolyRLS.h](./source/PolyRLS.h) defines the PolyRLS object for fitting timeseries with polynomials
+
+In the ``filter'' folder there are 2 command line applications which can be used for testing and show most of the library features. More details can be found in the relevant [README](./filter/README.md).
+
+The project can be built with cmake using the following commands:
+```
+> mkdir .build
+> cd .build
+> cmake ..
+> make / nmake
+```
+
+
+## TODO
+
+- Implement the $U D U^T$ factorization of covariance matrix and the updating algorithm by Bierman (1977)
+- Document the C++ classes
+
+## Contributors
+
+- @nickspanos
+  -  Initial implementation of the algorithms
+- @MatinaDt
+  - Implemented the use of Eigen library 
+  - Tested Cholesky decomposition methods
 
 
