@@ -69,27 +69,26 @@ The algorithm is still valid for $\lambda=1$ but with infinite memory length ($\
 
 ### 2. Exponentially weighted RLS with square-root algorithm
 
-The square root algorithms (initially due to Potter (1963)) utilize the fact that $A$ and $P$ are symmetric, positive definite matrices. This can be understood e.g. by the fact that $J(\theta)$ close to the minimum can be expanded to 2nd order in $\theta$
-$$ J = J_0 + \theta^{-1} P^{-1} \theta $$
-thus the matrix $A=P^{-1}$ must be positive definite so that there is a minimum.
+The square root algorithm (initially due to Potter (1963)) utilizes the fact that $A$ and $P$ are symmetric, positive definite matrices. This can be understood e.g. by the fact that $J(\theta)$ close to the minimum can be expanded to 2nd order in $\theta - \theta_0$
+$$ J = J_0 + (\theta - \theta_0)^{T} P^{-1} (\theta - \theta_0) $$
+thus the matrix $A=P^{-1}$ (and $P$) must be positive definite so that there is a minimum.
 
-Such matrices can be Cholesky-decomposed as $P=Q\cdot Q^T$ where $Q$ is lower triangular.
-$Q$ is also called the square root of $P$, thus the name of the algorithm.
+Such matrices can be written as $P=Q\cdot Q^T$ where $Q$ is called the square root of $P$ (thus the name of the algorithm).
 The covariance update can be turned into an update of $Q$:
 
-$$ P' = Q'\cdot Q'^T = Q\left[ I - \alpha u\cdot u^T \right] Q^T$$
+$$ P' = Q'\cdot Q'^T = Q\left[ I - \beta u\cdot u^T \right] Q^T$$
 
-where $u=Q^T \cdot\phi$ and $\alpha = (1 + u^T\cdot u )^{-1}$.
+where $u=Q^T \cdot\phi$ and $\beta = (1 + u^T\cdot u )^{-1}$.
 
 It can be easily shown that
 
-$$ \left[ I - \alpha u\cdot u^T \right]  = \left[ I - \sigma u\cdot u^T \right]^2 $$
+$$ \left[ I - \beta u\cdot u^T \right]  = \left[ I - \alpha u\cdot u^T \right]^2 $$
 
-with $\sigma = \alpha / \left[ 1 + \sqrt{1 + \alpha u^T\cdot u}\right]$. Finally
+with $\alpha = \beta / \left[ 1 + \sqrt{1 - \beta u^T\cdot u}\right]$. Finally
 
-$$ Q' = Q \left[ I - \sigma u\cdot u^T \right]$$
+$$ Q' = Q \left[ I - \alpha u\cdot u^T \right]$$
 
-The benefit of $Q$ updating is that it ensures that $P$ retains symmetry and positive-definetness.
+The benefit of $Q$ updating is that it ensures that $P$ retains its positive-definetness.
 
 The RLS with recursion for $Q$ becomes
 
@@ -111,10 +110,6 @@ The RLS with recursion for $Q$ becomes
 
 This algorithm is taken from Ljung & Soederstroem (1987) "Theory & Practice of Recursive Identification", p. 328
 
-Note that this algorithm does not make $Q$ lower triangular. However it ensures that $P=Q\cdot Q^T$.
-
-**TODO:** We are updating only the lower triangular Q and it is working. Why??
-
 ### 3. Block RLS
 
 The rectangular moving block RLS uses the last $N$ points to estimate the parameters.
@@ -132,9 +127,9 @@ The updating sequence is given by
 > 
 > $$ \bar{\theta}(t) = \theta(t-1) + k\, e(t) $$
 > 
-> $$ \bar{P}(t) = \left[P(t-1) - k \cdot u^T\right] $$
+> $$ \bar{P}(t) = \left[P(t-1) - k \cdot u^T \right] $$
 > 
-> $$ e'(t) = y(t) - \theta(t)^T cdot \phi(t) $$
+> $$ e'(t) = y(t) - \theta(t)^T \cdot \phi(t) $$
 > 
 > $$ \bar{J}(t) = J(t-1) + e^2(t) \, \beta\,(1-\beta) + e'^2(t) $$
 > 
@@ -143,22 +138,22 @@ The down-dating sequence is
 
 > $$ e(t-N) = y(t-N) - \bar{\theta}^T(t)\cdot \phi(t-N) $$
 > 
-> $$ u = P(t)\cdot \phi(t-N) $$
+> $$ u = \bar{P}(t)\cdot \phi(t-N) $$
 > 
 > $$ \beta = \left[ 1 - \phi(t-N)^T \cdot u \right]^{-1} $$
 > 
 > $$ k = \beta \, u $$
 > 
-> $$ \theta(t) = \theta(t) - k \, e(t-N) $$
+> $$ \theta(t) = \bar{\theta}(t) - k \, e(t-N) $$
 > 
-> $$ P(t) = \left[P(t-1) + k \cdot u^T\right] $$
+> $$ P(t) = \left[\bar{P}(t) + k \cdot u^T\right] $$
 > 
 > $$ e'(t-N) = y(t) - \theta(t)^T\cdot \phi(t-N) $$
 > 
 > $$ J(t) = \bar{J}(t) - e^2(t-N) \, \beta\,(1-\beta) - e'^2(t-N) $$
 > 
 
-### 3. Block RLS with square root update
+### 4. Block RLS with square root update
 
 Similar to the above, the block RLS algorithm can be formulated with update of the square root of $P$.
 
