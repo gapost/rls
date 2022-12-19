@@ -10,7 +10,7 @@ It is assumed that a measured time-dependent quantity $y(t)$ follows a linear mo
 
 $$ y(t) = \theta^T \cdot \phi(t) + e(t) $$
 
-where $\theta$ is a parameter vector, $\phi(t)$ is a vector of known functions of time and $e(t)$ is white noise, $\langle e(t) \rangle = 0$, $\langle e(t)e(t') \rangle = \sigma^2\delta(t-t')$.
+where $\theta$ is a parameter vector, $\phi(t)$ is a vector of known functions of time and $e(t)$ is white noise.
 
 A least squares cost function is defined as
 
@@ -40,9 +40,9 @@ $$ A' = A + \phi \cdot \phi^T $$
 
 $$ e(t) = y(t) - \theta^T(t-1)\cdot \phi(t) $$
 
-$$ \theta' = \theta + k\, e(t) $$
+$$ \theta(t) = \theta(t-1) + k\, e(t) $$
 
-where $k$ is the "gain" which is defined below.
+where $k$ is the "gain" vector, which is defined below.
 
 ## Examples
 
@@ -79,7 +79,9 @@ The algorithm is still valid for $\lambda=1$ but with infinite memory length ($\
 ### 2. Exponentially weighted RLS with square-root algorithm
 
 The square root algorithm (initially due to Potter (1963)) utilizes the fact that $A$ and $P$ are symmetric, positive definite matrices. This can be understood e.g. by the fact that $J(\theta)$ close to the minimum can be expanded to 2nd order in $\theta - \theta_0$
+
 $$ J = J_0 + (\theta - \theta_0)^{T} P^{-1} (\theta - \theta_0) $$
+
 thus the matrix $A=P^{-1}$ (and $P$) must be positive definite so that there is a minimum.
 
 Such matrices can be written as $P=Q\cdot Q^T$ where $Q$ is called the square root of $P$ (thus the name of the algorithm).
@@ -121,7 +123,7 @@ This algorithm is taken from Ljung & Soederstroem (1987) "Theory & Practice of R
 
 ### 3. Block RLS
 
-The rectangular moving block RLS uses the last $N$ points to estimate the parameters.
+The sliding-block RLS uses the last $N$ points to estimate the parameters.
 In each recursion the estimate is first *updated* with the new data point and then *downdated* by removing the oldest point.
 
 The updating sequence is given by
@@ -143,7 +145,7 @@ The updating sequence is given by
 > $$ \bar{J}(t) = J(t-1) + e^2(t) \, \beta\,(1-\beta) + e'^2(t) $$
 > 
 
-The down-dating sequence is
+And the down-dating sequence is
 
 > $$ e(t-N) = y(t-N) - \bar{\theta}^T(t)\cdot \phi(t-N) $$
 > 
@@ -172,7 +174,7 @@ The algorithms are organized in a number of templated objects which are defined 
 - [RLS.h](./source/RLS.h) defines the RLS algorithms
 - [PolyRLS.h](./source/PolyRLS.h) defines the PolyRLS object for fitting timeseries with polynomials
 
-In the ``filter'' folder there are 2 command line applications which can be used for testing and show most of the library features. More details can be found in the relevant [README](./filter/README.md).
+In the ``filter`` folder there are 2 command line applications which can be used for testing and show most of the library features. More details can be found in the relevant [README](./filter/README.md).
 
 The project can be built with cmake using the following commands:
 ```
