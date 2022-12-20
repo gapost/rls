@@ -2,6 +2,20 @@
 
 Recursive least squares in C++
 
+- [RLS](#rls)
+  - [About](#about)
+  - [Examples](#examples)
+  - [Implemented Algorithms](#implemented-algorithms)
+    - [1. Exponentially weighted RLS](#1-exponentially-weighted-rls)
+    - [2. Exponentially weighted RLS with square-root algorithm](#2-exponentially-weighted-rls-with-square-root-algorithm)
+    - [3. Block RLS](#3-block-rls)
+    - [4. Block RLS with square root update](#4-block-rls-with-square-root-update)
+  - [Polynomial fitting of timeseries](#polynomial-fitting-of-timeseries)
+  - [Getting started](#getting-started)
+  - [TODO](#todo)
+  - [References](#references)
+  - [Contributors](#contributors)
+
 ## About
 
 Recursive least squares (RLS) refers to algorithms that recursively find the coefficients that minimize a weighted linear least squares cost function. 
@@ -168,6 +182,18 @@ And the down-dating sequence is
 
 Similar to the above, the block RLS algorithm can be formulated with update of the square root of $P$.
 
+## Polynomial fitting of timeseries
+
+A time series $y(t)$ can be fitted to a polynomial $f(t;\theta)=\sum_n \theta_n t^n$ using RLS. This is usefull for on-line monitoring to obtain, e.g., the rate of change $dy/dt$ of a signal.
+
+However, during long term operation of a polynomial RLS algorithm $t$ becomes very large and the numerical calculation of covariance update fails.
+
+A solution to this problem is to operate sychronously 2 RLS loops with a phase difference of $\Delta T$. When the operation time of the 1st loop reaches $2\Delta T$ the loop is reset and the output switches to the 2nd loop. This is repeated periodically every $\Delta T$ interval and the two loops are interchanged. Thus $t$ in each loop is bounded to $0\leq t \leq \Delta T$ and numerical failure of the algorithm due to large $t$ values is prevented.
+
+In sliding-window block RLS $\Delta T$ is equal to the block size. For exponentially weighted RLS $\Delta T$ is a multiple of the forgetting time constant, i.e. $\Delta T = n/(1-\lambda)$. Thus, when we change from loop 1 to loop 2 we essentially delete older points which were scaled by $w(t-\Delta t) = e^{-n}$ or lower. A value of $n\sim 10$ is recommended.
+
+This algorithm is implemented in the ``RLS::PolyRLS`` C++ class which is defined in [PolyRLS.h](source/PolyRLS.h).
+
 ## Getting started
 
 The algorithms are organized in a number of templated objects which are defined in 2 header files:
@@ -184,11 +210,17 @@ The project can be built with cmake using the following commands:
 > make / nmake
 ```
 
-
 ## TODO
 
 - Implement the $U D U^T$ factorization of covariance matrix and the updating algorithm by Bierman (1977)
 - Document the C++ classes
+
+## References
+
+- Zhang, Q. (2000). Some Implementation Aspects of Sliding Window Least Squares Algorithms. IFAC Proceedings Volumes, 33(15), 763–768. https://doi.org/https://doi.org/10.1016/S1474-6670(17)39844-0
+- Lennart Ljung and Torsten Söderström (1987). Theory and practice of recursive identification, MIT Press
+- G. J. Bierman (1977). Factorization Methods for Discrete Sequential Estimation, Elsevier, Academic Press 
+- P. E. Gill, G. H. Golub, W. Murray and M. A. Saunders (1974) Methods for modifying matrix factorizations. https://www.ams.org/journals/mcom/1974-28-126/S0025-5718-1974-0343558-6/
 
 ## Contributors
 
