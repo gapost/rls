@@ -1,6 +1,9 @@
 ## MATLAB
 .asv
 
+## vscode
+.vscode
+
 ## for cmake
 .build
 build

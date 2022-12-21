@@ -1,8 +1,8 @@
-# RLS
+# RLS - Recursive least squares in C++
 
-Recursive least squares in C++
+part of **QDaq** (https://gitlab.com/qdaq/qdaq) - Qt-based Data Acquisition
 
-- [RLS](#rls)
+- [RLS - Recursive least squares in C++](#rls---recursive-least-squares-in-c)
   - [About](#about)
   - [Examples](#examples)
   - [Implemented Algorithms](#implemented-algorithms)
@@ -36,7 +36,7 @@ RLS algorithms seek to estimate $\theta$ that minimizes $J$ and recursively refi
 
 The solution of the least squares problem (for $w(t)=1$) is given by the normal equations
 
-$$ \left[ \Phi^T \cdot \Phi \right] \theta = A\cdot \theta = \Phi^T\cdot Y \rightarrow \theta = A^{-1}\cdot \Phi^T\cdot Y$$
+$$ \left[ \Phi^T \cdot \Phi \right] \theta = A\cdot \theta = \Phi^T\cdot Y \quad \rightarrow \quad \theta = A^{-1}\cdot \Phi^T\cdot Y$$
 
 where $\Phi = [\phi(1) \; \phi(2) \dots ]^T$, $Y = [y(1) \; y(2) \dots ]^T$
 
