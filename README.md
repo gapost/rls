@@ -224,9 +224,9 @@ The project can be built with cmake using the following commands:
 
 ## Contributors
 
-- @nickspanos
+- [@nickspanos](https://gitlab.com/nickspanos)
   -  Initial implementation of the algorithms
-- @MatinaDt
+- [@MatinaDt](https://gitlab.com/MatinaDt)
   - Implemented the use of Eigen library 
   - Tested Cholesky decomposition methods
 
